@@ -1,0 +1,30 @@
+// Authors: sm106@illinois.edu
+
+syntax = "proto3";
+
+option java_multiple_files = true;
+option java_outer_classname = "ChainReplProto";
+option objc_class_prefix = "CRP";
+
+package chain;
+
+// The greeting service definition.
+service ChainImpl {
+  //
+  rpc Put (PutArg) returns (PutRet) {}
+}
+
+// The argument for a put request.
+message PutArg {
+  // Key to be put in the system.
+  optional string key = 1;
+
+  // Value to be put with the key.
+  optional string val = 2;
+}
+
+// The response message containing the value.
+message PutRet {
+  // Value for the requested key.
+  optional string val = 1;
+}
