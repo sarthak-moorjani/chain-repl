@@ -41,8 +41,9 @@ target_link_libraries(chain_proto
 # RPC Client
 add_library(rpc_client rpc_client.cc)
 add_library(rpc_server rpc_server.cc)
+add_library(client_rpc_server client_rpc_server.cc)
 foreach(_target
-  rpc_client rpc_server)
+  rpc_client rpc_server client_rpc_server)
   target_link_libraries(${_target}
     chain_proto
     ${_REFLECTION}
@@ -51,10 +52,22 @@ foreach(_target
 endforeach()
 
 foreach(_target
-  chain_replica chain_client)
+  chain_replica)
   add_executable(${_target} "${_target}.cc")
   target_link_libraries(${_target}
     rpc_server
+    rpc_client
+    chain_proto
+    ${_REFLECTION}
+    ${_GRPC_GRPCPP}
+    ${_PROTOBUF_LIBPROTOBUF})
+endforeach()
+
+foreach(_target
+  chain_client)
+  add_executable(${_target} "${_target}.cc")
+  target_link_libraries(${_target}
+    client_rpc_server
     rpc_client
     chain_proto
     ${_REFLECTION}

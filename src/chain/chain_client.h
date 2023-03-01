@@ -17,15 +17,27 @@
 #include "chain.grpc.pb.h"
 #include "rpc_client.h"
 
+// Forward declaration
+class ClientRPCServer;
+
 class ChainClient {
  private:
   // RPC Client.
   shared_ptr<RPCClient> rpc_client_;
 
+  // ClientRPCServer.
+  shared_ptr<ClientRPCServer> client_rpc_server_;
+
  public:
   // Constructor.
   ChainClient(std::vector<std::string> target_strs =
                 std::vector<std::string> ());
+
+  // Run the server.
+  void RunServer(std::string ip);
+
+  // Handle receive request.
+  void HandleReceiveRequest();
 
   // Create a Put request.
   void Put(std::string key, std::string value);
