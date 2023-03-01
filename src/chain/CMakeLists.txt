@@ -38,13 +38,35 @@ target_link_libraries(chain_proto
   ${_GRPC_GRPCPP}
   ${_PROTOBUF_LIBPROTOBUF})
 
-# Targets greeter_[async_](client|server)
+# RPC Client
+add_library(rpc_client rpc_client.cc)
+target_link_libraries(rpc_client
+  chain_proto
+  ${_REFLECTION}
+  ${_GRPC_GRPCPP}
+  ${_PROTOBUF_LIBPROTOBUF})
+
+# Chain replication files.
+# Add executable for the chain client.
+add_executable(chain_client chain_client.cc)
+add_library(chain_replica chain_replica.cc)
+
 foreach(_target
-  rpc_client rpc_server)
-  add_executable(${_target} "${_target}.cc")
+  chain_replica chain_client)
   target_link_libraries(${_target}
+    rpc_client
     chain_proto
     ${_REFLECTION}
     ${_GRPC_GRPCPP}
     ${_PROTOBUF_LIBPROTOBUF})
 endforeach()
+
+
+# RPC Server
+add_executable(rpc_server rpc_server.cc)
+target_link_libraries(rpc_server
+  chain_replica
+  chain_proto
+  ${_REFLECTION}
+  ${_GRPC_GRPCPP}
+  ${_PROTOBUF_LIBPROTOBUF})

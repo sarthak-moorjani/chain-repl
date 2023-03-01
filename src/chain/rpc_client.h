@@ -1,6 +1,6 @@
 /*
  * Authors: sm106@illinois.edu
- * This file defines the client for the Chain Replication algorithm.
+ * This file defines the RPC Client.
  *
  */
 
@@ -23,17 +23,24 @@ using grpc::CompletionQueue;
 using grpc::Service;
 using grpc::ClientAsyncResponseReader;
 
+using chain::ChainImpl;
+
 using namespace std;
 
 class RPCClient {
  private:
-    // Target IPs for the servers/replicas.
-    std::map<std::string,std::shared_ptr<Channel>> channels_;
+    // Target channel for the servers/replicas.
+    std::shared_ptr<Channel> channel_;
+
+    // Target stub.
+    std::unique_ptr<ChainImpl::Stub> stub_;
 
  public:
   // Constructor.
-  RPCClient(std::vector<std::string> target_strs =
-              std::vector<std::string> ());
+  RPCClient(string target_str);
+
+  // Handle client put request.
+  void Put(string key, string value);
 };
 
 #endif

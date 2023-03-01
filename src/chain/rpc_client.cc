@@ -17,23 +17,39 @@ using grpc::Channel;
 using grpc::ClientContext;
 using grpc::Status;
 
+using chain::PutArg;
+using chain::PutRet;
+
 using namespace std;
 
 //-----------------------------------------------------------------------------
 
-RPCClient::RPCClient(vector<string> target_strs) {
-  for (int i =0; i< target_strs.size();i++) {
-    std::shared_ptr<Channel> channel =
-      grpc::CreateChannel(target_strs[i], grpc::InsecureChannelCredentials());
-      cout << "Created" << endl;
-      channels_[target_strs[i]] = channel;
-  }
+RPCClient::RPCClient(string target_str) {
+
+  channel_ = grpc::CreateChannel(target_str,
+                                   grpc::InsecureChannelCredentials());
+  cout << "Created" << endl;
+  stub_ = make_unique<ChainImpl::Stub>(channel_);
 }
 
 //-----------------------------------------------------------------------------
 
-int main(int argc, char** argv) {
-  RPCClient rpc_client({"0.0.0.0:50052"});
+void RPCClient::Put(string key, string value) {
+  PutArg put_arg;
+  put_arg.set_key(key);
+  put_arg.set_val(value);
 
-  return 0;
+  PutRet put_ret;
+
+  ClientContext context;
+  Status status = stub_->Put(&context, put_arg, &put_ret);
+
+  if (status.ok()) {
+    std::cout << put_ret.val() << endl;
+  } else {
+    std::cout << status.error_code() << ": " << status.error_message()
+              << std::endl;
+  }
 }
+
+//-----------------------------------------------------------------------------

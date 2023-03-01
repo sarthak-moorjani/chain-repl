@@ -5,8 +5,8 @@
  *
  */
 
-#ifndef CHAIN_REPLICA_H
-#define CHAIN_REPLICA_H
+#ifndef RPC_SERVER_H
+#define RPC_SERVER_H
 
 #include <iostream>
 #include <memory>
