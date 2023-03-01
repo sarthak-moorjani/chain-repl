@@ -16,6 +16,9 @@
 
 #include "chain.grpc.pb.h"
 
+// Forward declaration.
+class RPCServer;
+
 class ChainReplica {
  public:
   // Constructor.
@@ -24,6 +27,10 @@ class ChainReplica {
   // Handle put request.
   void HandleReplicaPut(const chain::PutArg* request,
                         chain::PutRet* reply);
+
+ private:
+  // RPC Server Object.
+  std::shared_ptr<RPCServer> rpc_server_;
 };
 
 #endif
