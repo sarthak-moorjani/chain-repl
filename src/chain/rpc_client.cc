@@ -3,7 +3,7 @@
  *
  */
 
-#include "chain_client.h"
+#include "rpc_client.h"
 
 #include "chain.grpc.pb.h"
 
@@ -21,7 +21,7 @@ using namespace std;
 
 //-----------------------------------------------------------------------------
 
-ChainClient::ChainClient(vector<string> target_strs) {
+RPCClient::RPCClient(vector<string> target_strs) {
   for (int i =0; i< target_strs.size();i++) {
     std::shared_ptr<Channel> channel =
       grpc::CreateChannel(target_strs[i], grpc::InsecureChannelCredentials());
@@ -33,7 +33,7 @@ ChainClient::ChainClient(vector<string> target_strs) {
 //-----------------------------------------------------------------------------
 
 int main(int argc, char** argv) {
-  ChainClient chain_client({"0.0.0.0:50052"});
+  RPCClient rpc_client({"0.0.0.0:50052"});
 
   return 0;
 }

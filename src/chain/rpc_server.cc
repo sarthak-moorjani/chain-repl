@@ -1,4 +1,4 @@
-#include "chain_replica.h"
+#include "rpc_server.h"
 
 #include <grpcpp/ext/proto_server_reflection_plugin.h>
 #include <grpcpp/health_check_service_interface.h>
@@ -20,9 +20,9 @@ using namespace std;
 //-----------------------------------------------------------------------------
 
 // Logic and data behind the server's behavior.
-Status ChainReplica::Put(ServerContext* context,
-                         const chain::PutArg* request,
-                         chain::PutRet* reply) {
+Status RPCServer::Put(ServerContext* context,
+                      const chain::PutArg* request,
+                      chain::PutRet* reply) {
 
   cout << "In Replica Put" << endl;
   reply->set_val("check");
@@ -33,7 +33,7 @@ Status ChainReplica::Put(ServerContext* context,
 
 void RunServer() {
   std::string server_address("0.0.0.0:50052");
-  ChainReplica service;
+  RPCServer service;
 
   grpc::EnableDefaultHealthCheckService(true);
   grpc::reflection::InitProtoReflectionServerBuilderPlugin();

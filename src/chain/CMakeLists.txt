@@ -40,7 +40,7 @@ target_link_libraries(chain_proto
 
 # Targets greeter_[async_](client|server)
 foreach(_target
-  chain_client chain_replica)
+  rpc_client rpc_server)
   add_executable(${_target} "${_target}.cc")
   target_link_libraries(${_target}
     chain_proto

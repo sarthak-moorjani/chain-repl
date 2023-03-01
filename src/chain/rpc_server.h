@@ -1,6 +1,7 @@
 /*
  * Authors: sm106@illinois.edu
- * This file defines the replica for the Chain replication algorithm.
+ *
+ * This file defines a RPC Server.
  *
  */
 
@@ -15,7 +16,7 @@
 
 #include "chain.grpc.pb.h"
 
-class ChainReplica final : public chain::ChainImpl::Service {
+class RPCServer final : public chain::ChainImpl::Service {
   public:
     // The RPC methods definition will come here.
     grpc::Status Put(grpc::ServerContext* context,
