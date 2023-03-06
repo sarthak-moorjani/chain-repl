@@ -47,7 +47,7 @@ void RPCClient::Put(string key, string value) {
   Status status = stub_->Put(&context, put_arg, &put_ret);
 
   if (status.ok()) {
-    std::cout << put_ret.val() << endl;
+    std::cout << "put rpc completed" << endl;
   } else {
     std::cout << status.error_code() << ": " << status.error_message()
               << std::endl;
@@ -66,7 +66,7 @@ void RPCClient::Ack(string key) {
   Status status = stub_->Ack(&context, ack_arg, &ack_ret);
 
   if (status.ok()) {
-    std::cout << "ok" << endl;
+    std::cout << "ack rpc completed" << endl;
   } else {
     std::cout << status.error_code() << ": " << status.error_message()
               << std::endl;

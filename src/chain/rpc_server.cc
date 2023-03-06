@@ -34,7 +34,6 @@ Status RPCServer::Put(ServerContext* context,
 
   cout << "In RPC Server Put" << endl;
   chain_replica_->HandleReplicaPut(request, reply);
-  cout << "return value is " << reply->val();
   return Status::OK;
 }
 

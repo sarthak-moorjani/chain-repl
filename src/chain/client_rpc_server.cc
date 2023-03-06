@@ -35,7 +35,6 @@ Status ClientRPCServer::Ack(ServerContext* context,
                             const chain::AckArg* request,
                             chain::AckRet* reply) {
 
-  cout << "In client rpc server " << endl;
   chain_client_->HandleReceiveRequest(request);
   return Status::OK;
 }

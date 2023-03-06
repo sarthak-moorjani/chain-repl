@@ -39,7 +39,7 @@ void ChainClient::RunServer(string server_ip) {
 //-----------------------------------------------------------------------------
 
 void ChainClient::HandleReceiveRequest(const AckArg* ack_arg) {
-  cout << "In chain client, received ack for key"
+  cout << "In chain client, received ack for key: "
        << ack_arg->key() << endl;
 }
 
