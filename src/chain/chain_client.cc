@@ -14,6 +14,7 @@
 #include <thread>
 
 using chain::ChainImpl;
+using chain::AckArg;
 
 using grpc::Channel;
 using grpc::ClientContext;
@@ -37,7 +38,10 @@ void ChainClient::RunServer(string server_ip) {
 
 //-----------------------------------------------------------------------------
 
-void ChainClient::HandleReceiveRequest() {}
+void ChainClient::HandleReceiveRequest(const AckArg* ack_arg) {
+  cout << "In chain client, received ack for key"
+       << ack_arg->key() << endl;
+}
 
 //-----------------------------------------------------------------------------
 
@@ -52,7 +56,7 @@ int main() {
   server_ips.push_back("0.0.0.0:50052");
   ChainClient chain_client(server_ips);
 
-  thread t1(&ChainClient::RunServer, &chain_client, "0.0.0.0:50052");
+  thread t1(&ChainClient::RunServer, &chain_client, "0.0.0.0:50054");
   for (int i = 0; i < 10; i++) {
     chain_client.Put("key" + to_string(i), "value");
   }

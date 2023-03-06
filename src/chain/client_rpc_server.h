@@ -28,9 +28,9 @@ class ClientRPCServer final : public chain::ChainImpl::Service {
     void RunServer();
 
     // The RPC methods definition will come here.
-    grpc::Status Put(grpc::ServerContext* context,
-                     const chain::PutArg* request,
-                     chain::PutRet* reply) override;
+    grpc::Status Ack(grpc::ServerContext* context,
+                     const chain::AckArg* request,
+                     chain::AckRet* reply) override;
 
  private:
   // Chain client object.

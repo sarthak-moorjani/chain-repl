@@ -12,6 +12,9 @@ package chain;
 service ChainImpl {
   //
   rpc Put (PutArg) returns (PutRet) {}
+
+  // Acknowledgement from tail to client.
+  rpc Ack (AckArg) returns (AckRet) {}
 }
 
 // The argument for a put request.
@@ -28,3 +31,11 @@ message PutRet {
   // Value for the requested key.
   optional string val = 1;
 }
+
+//
+message AckArg {
+  // Key for which acknowledgment is given to client.
+  optional string key = 1;
+}
+
+message AckRet {}

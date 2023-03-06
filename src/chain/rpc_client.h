@@ -41,6 +41,9 @@ class RPCClient {
 
   // Handle client put request.
   void Put(string key, string value);
+
+  // Handle the ack request.
+  void Ack(string key);
 };
 
 #endif

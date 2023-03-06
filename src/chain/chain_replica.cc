@@ -46,7 +46,9 @@ void ChainReplica::HandleReplicaPut(const chain::PutArg* request,
     reply->set_val("forwarded");
   } else {
     // If current replica is the tail then respond to the client
-    reply->set_val("Hello world");
+    cout << "This is the tail, sending ack to client" << endl;
+    AcknowledgeClient(request->key());
+    reply->set_val("sent-to-client");
   }
 }
 
@@ -56,6 +58,15 @@ void ChainReplica::HandleReplicaPut(const chain::PutArg* request,
 void ChainReplica::ForwardRequest(string key, string val) {
   // Send the request to the following replica
   replica_map_[id_ + 1]->Put(key, val);
+}
+
+//-----------------------------------------------------------------------------
+
+void ChainReplica::AcknowledgeClient(string key) {
+  // Send the ack to client.
+  std::shared_ptr<RPCClient> rpc_client =
+    make_shared<RPCClient>("172.22.157.66:50054");
+  rpc_client->Ack(key);
 }
 
 //-----------------------------------------------------------------------------

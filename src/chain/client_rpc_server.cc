@@ -16,6 +16,9 @@ using grpc::Status;
 using chain::ChainImpl;
 using chain::PutArg;
 using chain::PutRet;
+using chain::AckArg;
+using chain::AckRet;
+
 using namespace std;
 
 //-----------------------------------------------------------------------------
@@ -28,13 +31,12 @@ ClientRPCServer::ClientRPCServer(ChainClient* chain_client) :
 //-----------------------------------------------------------------------------
 
 // Logic and data behind the server's behavior.
-Status ClientRPCServer::Put(ServerContext* context,
-                            const chain::PutArg* request,
-                            chain::PutRet* reply) {
+Status ClientRPCServer::Ack(ServerContext* context,
+                            const chain::AckArg* request,
+                            chain::AckRet* reply) {
 
-  cout << "In RPC Server Put" << endl;
-  chain_client_->HandleReceiveRequest();
-  cout << "return value is " << reply->val();
+  cout << "In client rpc server " << endl;
+  chain_client_->HandleReceiveRequest(request);
   return Status::OK;
 }
 

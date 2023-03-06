@@ -37,7 +37,7 @@ class ChainClient {
   void RunServer(std::string ip);
 
   // Handle receive request.
-  void HandleReceiveRequest();
+  void HandleReceiveRequest(const chain::AckArg* ack_arg);
 
   // Create a Put request.
   void Put(std::string key, std::string value);

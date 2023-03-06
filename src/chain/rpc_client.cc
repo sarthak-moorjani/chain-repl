@@ -19,6 +19,8 @@ using grpc::Status;
 
 using chain::PutArg;
 using chain::PutRet;
+using chain::AckArg;
+using chain::AckRet;
 
 using namespace std;
 
@@ -46,6 +48,25 @@ void RPCClient::Put(string key, string value) {
 
   if (status.ok()) {
     std::cout << put_ret.val() << endl;
+  } else {
+    std::cout << status.error_code() << ": " << status.error_message()
+              << std::endl;
+  }
+}
+
+//-----------------------------------------------------------------------------
+
+void RPCClient::Ack(string key) {
+  AckArg ack_arg;
+  ack_arg.set_key(key);
+
+  AckRet ack_ret;
+
+  ClientContext context;
+  Status status = stub_->Ack(&context, ack_arg, &ack_ret);
+
+  if (status.ok()) {
+    std::cout << "ok" << endl;
   } else {
     std::cout << status.error_code() << ": " << status.error_message()
               << std::endl;

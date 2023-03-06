@@ -37,6 +37,9 @@ class ChainReplica {
   // Forward the request to the next replica in the chain.
   void ForwardRequest(std::string key, std::string val);
 
+  // Ack client.
+  void AcknowledgeClient(std::string key);
+
  private:
   // RPC Server Object.
   std::shared_ptr<RPCServer> rpc_server_;
