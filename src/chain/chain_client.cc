@@ -45,20 +45,22 @@ void ChainClient::HandleReceiveRequest(const AckArg* ack_arg) {
 
 //-----------------------------------------------------------------------------
 
-void ChainClient::Put(string key, string value) {
-  rpc_client_->Put(key, value);
+void ChainClient::Put(string key, string value, string source_ip) {
+  rpc_client_->Put(key, value, source_ip);
 }
 
 //-----------------------------------------------------------------------------
 
-int main() {
+int main(int argc, char* argv[]) {
   vector<string> server_ips;
   server_ips.push_back("0.0.0.0:50052");
   ChainClient chain_client(server_ips);
+  
+  string client_ip = argv[1];
 
   thread t1(&ChainClient::RunServer, &chain_client, "0.0.0.0:50054");
   for (int i = 0; i < 10; i++) {
-    chain_client.Put("key" + to_string(i), "value");
+    chain_client.Put("key" + to_string(i), "value", client_ip);
   }
   t1.join();
 }

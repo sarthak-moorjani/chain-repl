@@ -10,8 +10,11 @@ package chain;
 
 // The greeting service definition.
 service ChainImpl {
-  //
+  // Put request from the client
   rpc Put (PutArg) returns (PutRet) {}
+
+  // Forward the request to next replica in chain
+  rpc Forward (FwdArg) returns (FwdRet) {}
 
   // Acknowledgement from tail to client.
   rpc Ack (AckArg) returns (AckRet) {}
@@ -24,11 +27,30 @@ message PutArg {
 
   // Value to be put with the key.
   optional string val = 2;
+
+  // Ip address of the client for sending ack.
+  optional string source_ip = 3;
 }
 
 // The response message containing the value.
 message PutRet {
   // Value for the requested key.
+  optional string val = 1;
+}
+
+message FwdArg {
+  // Key to be forwarded to next replica.
+  optional string key = 1;
+
+  // Value to be forwarded to the next replica.
+  optional string val = 2;
+
+  // IP of the next replica in the chain
+  optional string source_ip = 3;
+}
+
+message FwdRet {
+  // Response to the forward request
   optional string val = 1;
 }
 

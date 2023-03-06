@@ -32,6 +32,10 @@ class RPCServer final : public chain::ChainImpl::Service {
                      const chain::PutArg* request,
                      chain::PutRet* reply) override;
 
+    // RPC method to handle forward request from previous replica.
+    grpc::Status Forward(grpc::ServerContext* context,
+		         const chain::FwdArg* fwd_request,
+			 chain::FwdRet* fwd_reply) override;
  private:
   // Chain replica object.
   ChainReplica* chain_replica_;

@@ -39,34 +39,44 @@ void ChainReplica::HandleReplicaPut(const chain::PutArg* request,
   // Execute the operation in the current replica
   cout << "In replica put" << endl;
 
-  // If current replica is not the tail then forward the request to the next 
+  // Forward the request to the next client in the chain
+  replica_map_[id_ + 1]->Forward(request->key(), request->val(), request->source_ip());
+  reply->set_val("Forwarded request to replica: " + to_string(id_ + 1));
+}
+
+//-----------------------------------------------------------------------------
+
+//Forward request to the next replica or client
+void ChainReplica::HandleForwardRequest(const chain::FwdArg* request, 
+		                        chain::FwdRet* reply) {
+  // If current replica is not the tail then forward the request to the next
   // replica
   if (replica_map_.find(id_ + 1) != replica_map_.end()) {
-    ForwardRequest(request->key(), request->val());
+    replica_map_[id_ + 1]->Forward(request->key(), request->val(), 
+		                   request->source_ip());
     reply->set_val("forwarded");
   } else {
     // If current replica is the tail then respond to the client
     cout << "This is the tail, sending ack to client" << endl;
-    AcknowledgeClient(request->key());
+    AcknowledgeClient(request->key(), request->source_ip());
     reply->set_val("sent-to-client");
   }
 }
 
 //-----------------------------------------------------------------------------
 
-//Forward request to the next replica or client
-void ChainReplica::ForwardRequest(string key, string val) {
-  // Send the request to the following replica
-  replica_map_[id_ + 1]->Put(key, val);
-}
-
-//-----------------------------------------------------------------------------
-
-void ChainReplica::AcknowledgeClient(string key) {
-  // Send the ack to client.
-  std::shared_ptr<RPCClient> rpc_client =
-    make_shared<RPCClient>("172.22.157.66:50054");
-  rpc_client->Ack(key);
+void ChainReplica::AcknowledgeClient(string key, string source_ip) {
+  // Checking if the client is already known, then simply send the ack.
+  if (client_map_.find(source_ip) != client_map_.end()) {
+    client_map_[source_ip]->Ack(key);
+  } else {
+  // Add the new client to the map and then send the ack to client.
+    std::shared_ptr<RPCClient> rpc_client =
+    make_shared<RPCClient>(source_ip);
+    client_map_[source_ip] = rpc_client;
+    rpc_client->Ack(key);
+  }
+  cout << "Sending the ack to the client" << endl;
 }
 
 //-----------------------------------------------------------------------------

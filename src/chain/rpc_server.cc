@@ -16,6 +16,8 @@ using grpc::Status;
 using chain::ChainImpl;
 using chain::PutArg;
 using chain::PutRet;
+using chain::FwdArg;
+using chain::FwdRet;
 using namespace std;
 
 //-----------------------------------------------------------------------------
@@ -34,6 +36,16 @@ Status RPCServer::Put(ServerContext* context,
 
   cout << "In RPC Server Put" << endl;
   chain_replica_->HandleReplicaPut(request, reply);
+  return Status::OK;
+}
+
+//-----------------------------------------------------------------------------
+
+Status RPCServer::Forward(ServerContext* context,
+		         const chain::FwdArg* fwd_request,
+			 chain::FwdRet* fwd_reply) {
+  cout << "In RPC Server Forward" << endl;
+  chain_replica_->HandleForwardRequest(fwd_request, fwd_reply);
   return Status::OK;
 }
 

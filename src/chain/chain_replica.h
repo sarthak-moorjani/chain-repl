@@ -33,12 +33,13 @@ class ChainReplica {
   void HandleReplicaPut(const chain::PutArg* request,
                         chain::PutRet* reply);
 
- private:
   // Forward the request to the next replica in the chain.
-  void ForwardRequest(std::string key, std::string val);
+  void HandleForwardRequest(const chain::FwdArg* fwd_request,
+                            chain::FwdRet* fwd_reply);
 
+ private:
   // Ack client.
-  void AcknowledgeClient(std::string key);
+  void AcknowledgeClient(std::string key, std::string source_ip);
 
  private:
   // RPC Server Object.
@@ -46,6 +47,9 @@ class ChainReplica {
 
   // Mapping from replica ID to RPC Clients.
   std::unordered_map<int, std::shared_ptr<RPCClient> > replica_map_;
+
+  // Maintaining a map of known clients
+  std::unordered_map<std::string, std::shared_ptr<RPCClient> > client_map_;
 
   // Variable to hold this replica's id.
   const int id_;

@@ -21,6 +21,8 @@ using chain::PutArg;
 using chain::PutRet;
 using chain::AckArg;
 using chain::AckRet;
+using chain::FwdArg;
+using chain::FwdRet;
 
 using namespace std;
 
@@ -36,10 +38,11 @@ RPCClient::RPCClient(string target_str) {
 
 //-----------------------------------------------------------------------------
 
-void RPCClient::Put(string key, string value) {
+void RPCClient::Put(string key, string value, string source_ip) {
   PutArg put_arg;
   put_arg.set_key(key);
   put_arg.set_val(value);
+  put_arg.set_source_ip(source_ip);
 
   PutRet put_ret;
 
@@ -48,6 +51,27 @@ void RPCClient::Put(string key, string value) {
 
   if (status.ok()) {
     std::cout << "put rpc completed" << endl;
+  } else {
+    std::cout << status.error_code() << ": " << status.error_message()
+              << std::endl;
+  }
+}
+
+//-----------------------------------------------------------------------------
+
+void RPCClient::Forward(string key, string value, string source_ip) {
+  FwdArg fwd_arg;
+  fwd_arg.set_key(key);
+  fwd_arg.set_val(value);
+  fwd_arg.set_source_ip(source_ip);
+
+  FwdRet fwd_ret;
+
+  ClientContext context;
+  Status status = stub_->Forward(&context, fwd_arg, &fwd_ret);
+
+  if (status.ok()) {
+    std::cout << "forward rpc completed" << endl;
   } else {
     std::cout << status.error_code() << ": " << status.error_message()
               << std::endl;

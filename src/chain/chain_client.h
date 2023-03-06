@@ -40,7 +40,7 @@ class ChainClient {
   void HandleReceiveRequest(const chain::AckArg* ack_arg);
 
   // Create a Put request.
-  void Put(std::string key, std::string value);
+  void Put(std::string key, std::string value, std::string source_ip);
 };
 
 #endif
