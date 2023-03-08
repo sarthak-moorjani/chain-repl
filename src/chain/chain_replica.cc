@@ -29,6 +29,12 @@ ChainReplica::ChainReplica(vector <int> replica_ids,
     replica_map_[replica_ids[i]] = make_shared<RPCClient>(replica_ips[i]);
   }
 
+  // rpc_server_->RunServer();
+}
+
+//-----------------------------------------------------------------------------
+
+void ChainReplica::RunServer() {
   rpc_server_->RunServer();
 }
 
@@ -39,9 +45,32 @@ void ChainReplica::HandleReplicaPut(const chain::PutArg* request,
   // Execute the operation in the current replica
   cout << "In replica put" << endl;
 
-  // Forward the request to the next client in the chain
-  replica_map_[id_ + 1]->Forward(request->key(), request->val(), request->source_ip());
-  reply->set_val("Forwarded request to replica: " + to_string(id_ + 1));
+  {
+    std::unique_lock<std::mutex> lock(put_mutex_);
+    put_queue_.push(make_pair(request->key(),
+                              make_pair(request->val(), request->source_ip())));
+    reply->set_val("forwarded");
+  }
+}
+
+//-----------------------------------------------------------------------------
+
+void ChainReplica::HandlePutQueue() {
+
+  while (true) {
+    bool send_req = false;
+    pair<string, pair<string, string> > p;
+    if (!put_queue_.empty()) {
+      {
+        std::unique_lock<std::mutex> lock(put_mutex_);
+        p = put_queue_.front();
+        send_req = true;
+        put_queue_.pop();
+      }
+    }
+    if (send_req)
+      replica_map_[id_ + 1]->Forward(p.first, p.second.first, p.second.second);
+  }
 }
 
 //-----------------------------------------------------------------------------
@@ -119,6 +148,10 @@ int main(int argc, char* argv[]) {
   int replica_id = std::stoi(argv[1]);
   cout << "Current replica id is " << replica_id << endl;
   ChainReplica chain_replica(replica_ids, replica_ips, replica_id);
+  thread t1(&ChainReplica::HandlePutQueue, &chain_replica);
+  thread t2(&ChainReplica::RunServer, &chain_replica);
 
+  t1.join();
+  t2.join();
   cout << "Listening to requests " << endl;
 }
