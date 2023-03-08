@@ -12,6 +12,7 @@
 #include <fstream>
 #include <sstream>
 #include <thread>
+#include <unistd.h>
 
 using chain::ChainImpl;
 using chain::AckArg;
@@ -55,11 +56,12 @@ int main(int argc, char* argv[]) {
   vector<string> server_ips;
   server_ips.push_back("0.0.0.0:50052");
   ChainClient chain_client(server_ips);
-  
+
   string client_ip = argv[1];
 
   thread t1(&ChainClient::RunServer, &chain_client, "0.0.0.0:50054");
-  for (int i = 0; i < 10; i++) {
+  sleep(5);
+  for (int i = 0; i < 1000; i++) {
     chain_client.Put("key" + to_string(i), "value", client_ip);
   }
   t1.join();
