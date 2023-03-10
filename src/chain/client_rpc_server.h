@@ -25,7 +25,7 @@ class ClientRPCServer final : public chain::ChainImpl::Service {
     ClientRPCServer(ChainClient *chain_client);
 
     // Run the server.
-    void RunServer();
+    void RunServer(string server_port);
 
     // The RPC methods definition will come here.
     grpc::Status Ack(grpc::ServerContext* context,

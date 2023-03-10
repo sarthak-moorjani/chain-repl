@@ -32,9 +32,9 @@ ChainClient::ChainClient(vector<string> target_strs) :
 
 //-----------------------------------------------------------------------------
 
-void ChainClient::RunServer(string server_ip) {
+void ChainClient::RunServer(string server_port) {
   client_rpc_server_ = make_shared<ClientRPCServer>(this);
-  client_rpc_server_->RunServer();
+  client_rpc_server_->RunServer(server_port);
 }
 
 //-----------------------------------------------------------------------------
@@ -54,14 +54,38 @@ void ChainClient::Put(string key, string value, string source_ip) {
 
 int main(int argc, char* argv[]) {
   vector<string> server_ips;
-  server_ips.push_back("0.0.0.0:50052");
+
+  ifstream config_file;
+  config_file.open(argv[2]);
+
+  string config_line;
+
+  if (config_file.is_open()) {
+    while (config_file) {
+      std::getline(config_file, config_line);
+
+      if (config_line.size() == 0) {
+        break;
+      }
+                  // Get the id of first replica or head
+       if (stoi(config_line.substr(0, config_line.find(","))) == 1) {
+         server_ips.push_back(config_line.substr(config_line.find(",") + 1));
+	 break;
+       }
+    } 
+  } else {
+      cout << "Could not open file";
+  }
+
   ChainClient chain_client(server_ips);
 
   string client_ip = argv[1];
 
-  thread t1(&ChainClient::RunServer, &chain_client, "0.0.0.0:50054");
+  string client_port = client_ip.substr(client_ip.find(":") + 1);
+
+  thread t1(&ChainClient::RunServer, &chain_client, client_port);
   sleep(5);
-  for (int i = 0; i < 1000; i++) {
+  for (int i = 0; i < 10000; i++) {
     chain_client.Put("key" + to_string(i), "value", client_ip);
   }
   t1.join();

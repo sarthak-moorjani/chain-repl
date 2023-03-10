@@ -41,8 +41,8 @@ Status ClientRPCServer::Ack(ServerContext* context,
 
 //-----------------------------------------------------------------------------
 
-void ClientRPCServer::RunServer() {
-  std::string server_address("0.0.0.0:50054");
+void ClientRPCServer::RunServer(string server_port) {
+  std::string server_address("0.0.0.0:" + server_port);
 
   grpc::EnableDefaultHealthCheckService(true);
   grpc::reflection::InitProtoReflectionServerBuilderPlugin();
