@@ -47,6 +47,9 @@ class ChainReplica {
   // Handle the background requests.
   void HandlePutQueue();
 
+  // Handle the background forward requests.
+  void HandleForwardQueue();
+
  private:
   // Ack client.
   void AcknowledgeClient(std::string key, std::string source_ip);
@@ -64,12 +67,19 @@ class ChainReplica {
   // Variable to hold this replica's id.
   const int id_;
 
-  // Queue for requests.
+  // Queue for put requests.
   std::queue<std::pair<std::string, std::pair<std::string, std::string>>>
     put_queue_;
 
   // Mutex for protecting the put queue.
   std::mutex put_mutex_;
+
+  // Queue for forward requests.
+  std::queue<std::pair<std::string, std::pair<std::string, std::string>>>
+    forward_queue_;
+
+  // Mutex for protecting forward queue.
+  std::mutex forward_mutex_;
 };
 
 #endif

@@ -78,17 +78,49 @@ void ChainReplica::HandlePutQueue() {
 //Forward request to the next replica or client
 void ChainReplica::HandleForwardRequest(const chain::FwdArg* request, 
 		                        chain::FwdRet* reply) {
-  // If current replica is not the tail then forward the request to the next
-  // replica
-  if (replica_map_.find(id_ + 1) != replica_map_.end()) {
-    replica_map_[id_ + 1]->Forward(request->key(), request->val(), 
-		                   request->source_ip());
-    reply->set_val("forwarded");
-  } else {
-    // If current replica is the tail then respond to the client
-    cout << "This is the tail, sending ack to client" << endl;
-    AcknowledgeClient(request->key(), request->source_ip());
-    reply->set_val("sent-to-client");
+	// Add the request to the forward queue.
+  {
+    std::unique_lock<std::mutex> lock(forward_mutex_);
+    put_queue_.push(make_pair(request->key(),
+                              make_pair(request->val(), request->source_ip())));
+    // If current replica is not the tail then forwward the request to the next
+    // replica.
+    if (replica_map_.find(id_ + 1) != replica_map_.end()) {
+        reply->set_val("forwarded");
+    } else {
+        // If current replica is the tail then respond to the client
+        cout << "This is the tail, sent ack to client" << endl;
+        reply->set_val("sent-to-client");
+    }
+  }
+}
+
+//-----------------------------------------------------------------------------
+
+// Handle requests in the forward queue.
+void ChainReplica::HandleForwardQueue() {
+  while (true) {
+    bool forward_req = false;
+    pair<string, pair<string, string> > p;
+    if (!forward_queue_.empty()) {
+      {
+        std::unique_lock<std::mutex> lock(forward_mutex_);
+        p = forward_queue_.front();
+        forward_req = true;
+        forward_queue_.pop();
+      }
+    }
+    if (forward_req) {
+      // If current replica is not the tail then forward the request to the
+      // next replica
+      if (replica_map_.find(id_ + 1) != replica_map_.end()) {
+        replica_map_[id_ + 1]->Forward(p.first, p.second.first,
+                                       p.second.second);
+      } else {
+        // If current replica is the tail then respond to the client
+        AcknowledgeClient(p.first, p.second.second);
+      }
+    }
   }
 }
 
