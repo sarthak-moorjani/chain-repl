@@ -88,12 +88,13 @@ int main(int argc, char* argv[]) {
                                    (chain_client.client_ip_.find(":") + 1);
 
   thread t1(&ChainClient::RunServer, &chain_client, client_port);
+  sleep(5);
   for (int i = 0; i < 10000; i++) {
     chain_client.request_queue_.push(make_pair("key" + to_string(i), "value"));
     // chain_client.Put("key" + to_string(i), "value", client_ip);
   }
   pair <string, string> p = chain_client.request_queue_.front();
-  chain_client.request_queue_.pop();
+  cout << "first key: " << p.first << endl;
   chain_client.Put(p.first, p.second, chain_client.client_ip_);
   t1.join();
 }

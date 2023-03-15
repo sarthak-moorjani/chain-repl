@@ -109,6 +109,7 @@ void ChainReplica::HandleForwardRequest(const chain::FwdArg* request,
 
 // Handle requests in the forward queue.
 void ChainReplica::HandleForwardQueue() {
+  cout << "In handle forward queue" << endl;
   while (true) {
     bool forward_req = false;
     pair<string, pair<string, string> > p;
@@ -128,6 +129,7 @@ void ChainReplica::HandleForwardQueue() {
                                        p.second.second);
       } else {
         // If current replica is the tail then respond to the client
+        cout << "trying to send an ack to the client" << endl;
         AcknowledgeClient(p.first, p.second.second);
       }
     }
@@ -191,9 +193,11 @@ int main(int argc, char* argv[]) {
   cout << "Current replica id is " << replica_id << endl;
   ChainReplica chain_replica(replica_ids, replica_ips, replica_id);
   thread t1(&ChainReplica::HandlePutQueue, &chain_replica);
-  thread t2(&ChainReplica::RunServer, &chain_replica);
+  thread t2(&ChainReplica::HandleForwardQueue, &chain_replica);
+  thread t3(&ChainReplica::RunServer, &chain_replica);
 
   t1.join();
   t2.join();
+  t3.join();
   cout << "Listening to requests " << endl;
 }
