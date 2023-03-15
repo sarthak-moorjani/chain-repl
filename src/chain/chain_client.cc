@@ -42,6 +42,9 @@ void ChainClient::RunServer(string server_port) {
 void ChainClient::HandleReceiveRequest(const AckArg* ack_arg) {
   cout << "In chain client, received ack for key: "
        << ack_arg->key() << endl;
+  request_queue_.pop();
+  pair <string, string> p = request_queue_.front();
+  Put(p.first, p.second, client_ip_);
 }
 
 //-----------------------------------------------------------------------------
@@ -70,7 +73,7 @@ int main(int argc, char* argv[]) {
                   // Get the id of first replica or head
        if (stoi(config_line.substr(0, config_line.find(","))) == 1) {
          server_ips.push_back(config_line.substr(config_line.find(",") + 1));
-	 break;
+	        break;
        }
     } 
   } else {
@@ -79,14 +82,18 @@ int main(int argc, char* argv[]) {
 
   ChainClient chain_client(server_ips);
 
-  string client_ip = argv[1];
+  chain_client.client_ip_ = argv[1];
 
-  string client_port = client_ip.substr(client_ip.find(":") + 1);
+  string client_port = chain_client.client_ip_.substr
+                                   (chain_client.client_ip_.find(":") + 1);
 
   thread t1(&ChainClient::RunServer, &chain_client, client_port);
-  sleep(5);
   for (int i = 0; i < 10000; i++) {
-    chain_client.Put("key" + to_string(i), "value", client_ip);
+    chain_client.request_queue_.push(make_pair("key" + to_string(i), "value"));
+    // chain_client.Put("key" + to_string(i), "value", client_ip);
   }
+  pair <string, string> p = chain_client.request_queue_.front();
+  chain_client.request_queue_.pop();
+  chain_client.Put(p.first, p.second, chain_client.client_ip_);
   t1.join();
 }

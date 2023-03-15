@@ -44,6 +44,11 @@ void ChainReplica::HandleReplicaPut(const chain::PutArg* request,
                                     chain::PutRet* reply) {
   // Execute the operation in the current replica
   cout << "In replica put" << endl;
+  // Add data to the kv store.
+  {
+    std::unique_lock<std::mutex> lock(store_mutex_);
+    kv_store_[request->key()] = request->val();
+  }
 
   {
     std::unique_lock<std::mutex> lock(put_mutex_);
@@ -78,6 +83,11 @@ void ChainReplica::HandlePutQueue() {
 //Forward request to the next replica or client
 void ChainReplica::HandleForwardRequest(const chain::FwdArg* request, 
 		                        chain::FwdRet* reply) {
+	// Add data in the kv store.
+  {
+    std::unique_lock<std::mutex> lock(store_mutex_);
+    kv_store_[request->key()] = request->val();
+  }
 	// Add the request to the forward queue.
   {
     std::unique_lock<std::mutex> lock(forward_mutex_);

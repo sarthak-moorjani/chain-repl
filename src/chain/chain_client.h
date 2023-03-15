@@ -9,6 +9,7 @@
 
 #include <iostream>
 #include <memory>
+#include <queue>
 #include <string>
 #include <vector>
 
@@ -41,6 +42,12 @@ class ChainClient {
 
   // Create a Put request.
   void Put(std::string key, std::string value, std::string source_ip);
+
+  // Client request queue.
+  std::queue<std::pair<std::string, std::string> > request_queue_;
+
+  // Client IP
+  std::string client_ip_;
 };
 
 #endif

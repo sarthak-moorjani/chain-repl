@@ -80,6 +80,12 @@ class ChainReplica {
 
   // Mutex for protecting forward queue.
   std::mutex forward_mutex_;
+
+  // Map to hold the key value data sent by the user
+  std::unordered_map<std::string, std::string> kv_store_;
+
+  // Mutex for protecting the kv store map.
+  std::mutex store_mutex_;
 };
 
 #endif
