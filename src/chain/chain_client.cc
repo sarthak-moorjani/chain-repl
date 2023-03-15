@@ -42,6 +42,9 @@ void ChainClient::RunServer(string server_port) {
 void ChainClient::HandleReceiveRequest(const AckArg* ack_arg) {
   cout << "In chain client, received ack for key: "
        << ack_arg->key() << endl;
+  if (request_queue_.size() == 0) {
+    return;
+  }
   request_queue_.pop();
   pair <string, string> p = request_queue_.front();
   Put(p.first, p.second, client_ip_);

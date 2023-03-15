@@ -91,7 +91,7 @@ void ChainReplica::HandleForwardRequest(const chain::FwdArg* request,
 	// Add the request to the forward queue.
   {
     std::unique_lock<std::mutex> lock(forward_mutex_);
-    put_queue_.push(make_pair(request->key(),
+    forward_queue_.push(make_pair(request->key(),
                               make_pair(request->val(), request->source_ip())));
     // If current replica is not the tail then forwward the request to the next
     // replica.
