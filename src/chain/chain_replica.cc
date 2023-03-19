@@ -8,6 +8,8 @@
 #include <mutex>
 #include <iostream>
 
+using grpc::Status;
+
 using chain::PutArg;
 using chain::PutRet;
 
@@ -76,6 +78,17 @@ void ChainReplica::HandlePutQueue() {
     if (send_req)
       replica_map_[id_ + 1]->Forward(p.first, p.second.first, p.second.second);
   }
+}
+
+Status ChainReplica::HandleGetRequest(const chain::GetArg* get_arg,
+                                    chain::GetRet* get_reply) {
+
+  if (kv_store_.find(get_arg->key()) == kv_store_.end()) {
+    return grpc::Status(grpc::StatusCode::NOT_FOUND, "Key not found");
+  }
+
+  get_reply->set_value(kv_store_[get_arg->key()]);
+  return Status::OK;
 }
 
 //-----------------------------------------------------------------------------

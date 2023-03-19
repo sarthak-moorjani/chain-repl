@@ -23,11 +23,14 @@ class ClientRPCServer;
 
 class ChainClient {
  private:
-  // RPC Client.
+  // RPC Client for the head.
   shared_ptr<RPCClient> rpc_client_;
 
   // ClientRPCServer.
   shared_ptr<ClientRPCServer> client_rpc_server_;
+
+  // RPC Client for the tail.
+  shared_ptr<RPCClient> tail_rpc_client_;
 
  public:
   // Constructor.
@@ -42,6 +45,9 @@ class ChainClient {
 
   // Create a Put request.
   void Put(std::string key, std::string value, std::string source_ip);
+
+  // Create a Get request.
+  void Get(string key);
 
   // Client request queue.
   std::queue<std::pair<std::string, std::string> > request_queue_;

@@ -50,6 +50,10 @@ class ChainReplica {
   // Handle the background forward requests.
   void HandleForwardQueue();
 
+  // Handle the Get request.
+  grpc::Status HandleGetRequest(const chain::GetArg* get_arg,
+                        chain::GetRet* get_reply);
+
  private:
   // Ack client.
   void AcknowledgeClient(std::string key, std::string source_ip);

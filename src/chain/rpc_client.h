@@ -47,6 +47,9 @@ class RPCClient {
 
   // Handle the ack request.
   void Ack(string key);
+
+  // Handle the Get request.
+  std::string Get(string key);
 };
 
 #endif

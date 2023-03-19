@@ -18,6 +18,9 @@ service ChainImpl {
 
   // Acknowledgement from tail to client.
   rpc Ack (AckArg) returns (AckRet) {}
+
+  // Read request.
+  rpc Get (GetArg) returns (GetRet) {}
 }
 
 // The argument for a put request.
@@ -61,3 +64,14 @@ message AckArg {
 }
 
 message AckRet {}
+
+// Get request.
+message GetArg {
+  // Key for which read request is made.
+  optional string key = 1;
+}
+
+message GetRet {
+  // Value for the requested key.
+  optional string value = 2;
+}

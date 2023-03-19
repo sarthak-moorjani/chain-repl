@@ -26,7 +26,8 @@ using namespace std;
 //-----------------------------------------------------------------------------
 
 ChainClient::ChainClient(vector<string> target_strs) :
-  rpc_client_(make_shared<RPCClient>(target_strs[0])) {
+  rpc_client_(make_shared<RPCClient>(target_strs[0])),
+  tail_rpc_client_(make_shared<RPCClient>(target_strs[target_strs.size() - 1])) {
 
 }
 
@@ -54,6 +55,13 @@ void ChainClient::HandleReceiveRequest(const AckArg* ack_arg) {
 
 void ChainClient::Put(string key, string value, string source_ip) {
   rpc_client_->Put(key, value, source_ip);
+}
+
+//-----------------------------------------------------------------------------
+
+void ChainClient::Get(string key) {
+  string val = tail_rpc_client_->Get(key);
+  cout << "Got value " << val << endl;
 }
 
 //-----------------------------------------------------------------------------
@@ -92,12 +100,17 @@ int main(int argc, char* argv[]) {
 
   thread t1(&ChainClient::RunServer, &chain_client, client_port);
   sleep(5);
-  for (int i = 0; i < 10000; i++) {
+  for (int i = 0; i < 100; i++) {
     chain_client.request_queue_.push(make_pair("key" + to_string(i), "value"));
     // chain_client.Put("key" + to_string(i), "value", client_ip);
   }
   pair <string, string> p = chain_client.request_queue_.front();
   cout << "first key: " << p.first << endl;
   chain_client.Put(p.first, p.second, chain_client.client_ip_);
+
+  for (int i = 0; i < 100; i++) {
+    chain_client.Get("key" + to_string(i));
+  }
+
   t1.join();
 }

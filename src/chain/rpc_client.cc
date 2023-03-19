@@ -23,6 +23,8 @@ using chain::AckArg;
 using chain::AckRet;
 using chain::FwdArg;
 using chain::FwdRet;
+using chain::GetArg;
+using chain::GetRet;
 
 using namespace std;
 
@@ -54,6 +56,27 @@ void RPCClient::Put(string key, string value, string source_ip) {
   } else {
     std::cout << status.error_code() << ": " << status.error_message()
               << std::endl;
+  }
+}
+
+//-----------------------------------------------------------------------------
+
+string RPCClient::Get(string key) {
+  GetArg get_arg;
+  get_arg.set_key(key);
+
+  GetRet get_ret;
+
+  ClientContext context;
+  Status status = stub_->Get(&context, get_arg, &get_ret);
+
+  if (status.ok()) {
+    std::cout << "get rpc completed" << endl;
+    return get_ret.value();
+  } else {
+    std::cout << status.error_code() << ": " << status.error_message()
+              << std::endl;
+    return "";
   }
 }
 
