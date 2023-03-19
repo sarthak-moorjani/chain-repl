@@ -44,10 +44,11 @@ void ChainClient::HandleReceiveRequest(const AckArg* ack_arg) {
   cout << "In chain client, received ack for key: "
        << ack_arg->key() << endl;
   if (request_queue_.size() == 0) {
+    cout << "nothing more to send" << endl;
     return;
   }
-  request_queue_.pop();
   pair <string, string> p = request_queue_.front();
+  request_queue_.pop();
   Put(p.first, p.second, client_ip_);
 }
 
@@ -108,6 +109,7 @@ int main(int argc, char* argv[]) {
   cout << "first key: " << p.first << endl;
   chain_client.Put(p.first, p.second, chain_client.client_ip_);
 
+  sleep(5);
   for (int i = 0; i < 100; i++) {
     chain_client.Get("key" + to_string(i));
   }
