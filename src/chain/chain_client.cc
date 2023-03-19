@@ -68,7 +68,7 @@ void ChainClient::Get(string key) {
 //-----------------------------------------------------------------------------
 
 int main(int argc, char* argv[]) {
-  vector<string> server_ips;
+  vector<string> server_ips(2);
 
   ifstream config_file;
   config_file.open(argv[2]);
@@ -82,10 +82,13 @@ int main(int argc, char* argv[]) {
       if (config_line.size() == 0) {
         break;
       }
-                  // Get the id of first replica or head
+       // Get the id of first replica or head
        if (stoi(config_line.substr(0, config_line.find(","))) == 1) {
-         server_ips.push_back(config_line.substr(config_line.find(",") + 1));
-	        break;
+         server_ips[0] = config_line.substr(config_line.find(",") + 1);
+       }
+       if (stoi(config_line.substr(0, config_line.find(","))) == 3) {
+         server_ips[1] = config_line.substr(config_line.find(",") + 1);
+         break;
        }
     } 
   } else {
