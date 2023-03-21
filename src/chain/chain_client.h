@@ -7,6 +7,7 @@
 #ifndef CHAIN_CLIENT_H
 #define CHAIN_CLIENT_H
 
+#include <chrono>
 #include <iostream>
 #include <memory>
 #include <queue>
@@ -32,6 +33,9 @@ class ChainClient {
   // RPC Client for the tail.
   shared_ptr<RPCClient> tail_rpc_client_;
 
+  // Function to perform next operation
+  void NextOperation();
+
  public:
   // Constructor.
   ChainClient(std::vector<std::string> target_strs =
@@ -49,11 +53,20 @@ class ChainClient {
   // Create a Get request.
   void Get(string key);
 
-  // Client request queue.
-  std::queue<std::pair<std::string, std::string> > request_queue_;
+  // Operations queue.
+  std::queue<std::string> operations_queue_;
+
+  // Keys queue
+  std::queue<std::string> keys_queue_;
+
+  // Values queue
+  std::queue<std::string> values_queue_;
 
   // Client IP
   std::string client_ip_;
+
+  // End time of all experiments.
+  std::chrono::time_point<std::chrono::high_resolution_clock> end_time_;
 };
 
 #endif
