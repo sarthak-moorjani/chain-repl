@@ -58,6 +58,9 @@ class ChainReplica {
   void HandleFinalizeKey(const chain::FinalizeKeyArg* fin_key_arg,
                          chain::FinalizeKeyRet* fin_key_ret);
 
+  // Handle the background finalize requests.
+  void HandleFinalizeQueue();
+
  private:
   // Ack client.
   void AcknowledgeClient(std::string key, std::string source_ip);
@@ -94,6 +97,12 @@ class ChainReplica {
 
   // Mutex for protecting the kv store map.
   std::mutex store_mutex_;
+
+  // Queue for finalize requests.
+  std::queue<std::string> finalize_queue_;
+
+  // Mutex for protecting the finalize queue.
+  std::mutex finalize_mutex_;
 };
 
 #endif

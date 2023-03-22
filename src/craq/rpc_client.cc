@@ -25,6 +25,8 @@ using chain::FwdArg;
 using chain::FwdRet;
 using chain::GetArg;
 using chain::GetRet;
+using chain::FinalizeKeyArg;
+using chain::FinalizeKeyRet;
 
 using namespace std;
 
@@ -114,6 +116,25 @@ void RPCClient::Ack(string key) {
 
   if (status.ok()) {
   //  std::cout << "ack rpc completed" << endl;
+  } else {
+    std::cout << status.error_code() << ": " << status.error_message()
+              << std::endl;
+  }
+}
+
+//-----------------------------------------------------------------------------
+
+void RPCClient::FinalizeKey(string key) {
+  FinalizeKeyArg fin_key_arg;
+  fin_key_arg.set_key(key);
+
+  FinalizeKeyRet fin_key_ret;
+
+  ClientContext context;
+  Status status = stub_->FinalizeKey(&context, fin_key_arg, &fin_key_ret);
+
+  if (status.ok()) {
+    //  std::cout << "finalize rpc completed" << endl;
   } else {
     std::cout << status.error_code() << ": " << status.error_message()
               << std::endl;

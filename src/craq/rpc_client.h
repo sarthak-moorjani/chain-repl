@@ -50,6 +50,9 @@ class RPCClient {
 
   // Handle the Get request.
   std::string Get(string key);
+
+  // Handle the finalize key request.
+  void FinalizeKey(string key);
 };
 
 #endif
