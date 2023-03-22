@@ -1,0 +1,2 @@
+/usr/bin/ar qc libchain_proto.a CMakeFiles/chain_proto.dir/chain.pb.cc.o CMakeFiles/chain_proto.dir/chain.grpc.pb.cc.o
+/usr/bin/ranlib libchain_proto.a
