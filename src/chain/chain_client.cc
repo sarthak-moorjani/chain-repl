@@ -1,5 +1,6 @@
 /*
- * Authors: sm106@illinois.edu
+ * Authors: sm106@illinois.edu, shubhij2@illinois.edu
+ *
  *
  */
 
@@ -42,13 +43,7 @@ void ChainClient::RunServer(string server_port) {
 //-----------------------------------------------------------------------------
 
 void ChainClient::HandleReceiveRequest(const AckArg* ack_arg) {
-  cout << "In chain client, received ack for key: "
-       << ack_arg->key() << endl;
-  //operations_queue_.pop();
-  //keys_queue_.pop();
-  //values_queue_.pop();
   next_ops_ctr_++;
-  cout << "pop complte" << endl;
 }
 
 //-----------------------------------------------------------------------------
@@ -61,7 +56,6 @@ void ChainClient::Put(string key, string value, string source_ip) {
 
 void ChainClient::Get(string key) {
   string val = tail_rpc_client_->Get(key);
-  cout << "Got value " << val << endl;
   next_ops_ctr_++;
 }
 
@@ -70,8 +64,8 @@ void ChainClient::Get(string key) {
 void ChainClient::NextOperation() {
   while (1) {
     if (operations_queue_.size() == 0) {
+      end_time_ = std::chrono::high_resolution_clock::now();
       cout << "All operations complete" << endl;
-      //end_time_ = std::chrono::high_resolution_clock::now();
       return;
     }
     if (next_ops_ctr_ > 0) {
@@ -178,13 +172,10 @@ int main(int argc, char* argv[]) {
 
   thread t2(&ChainClient::NextOperation, &chain_client);
   t2.join();
-  cout << "hello 1" << endl;
-  //auto elapsed = chain_client.end_time_ - start;
-  cout << "hello 2" << endl;
-  //long long microseconds = chrono::duration_cast<chrono::microseconds> 
-  //                                              (elapsed).count();
-  cout << "hello 3" << endl;
-  //cout << "Time taken " << microseconds << endl;
+  cout << "hello 1" << endl; 
+  auto elapsed = chain_client.end_time_ - start;
+  long long microseconds = chrono::duration_cast<chrono::microseconds>(elapsed).count();
+  cout << "Time taken " << microseconds << endl;
 
   t1.join();
 }

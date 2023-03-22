@@ -69,7 +69,7 @@ class ChainClient {
   // Counter for next ops.
   std::atomic<int> next_ops_ctr_;
   // End time of all experiments.
-  // std::chrono::time_point<std::chrono::high_resolution_clock> end_time_;
+  std::chrono::time_point<std::chrono::high_resolution_clock> end_time_;
 };
 
 #endif

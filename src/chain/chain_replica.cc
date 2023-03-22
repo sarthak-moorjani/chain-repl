@@ -45,7 +45,7 @@ void ChainReplica::RunServer() {
 void ChainReplica::HandleReplicaPut(const chain::PutArg* request,
                                     chain::PutRet* reply) {
   // Execute the operation in the current replica
-  cout << "In replica put" << endl;
+  //cout << "In replica put" << endl;
   // Add data to the kv store.
   {
     std::unique_lock<std::mutex> lock(store_mutex_);
@@ -112,7 +112,7 @@ void ChainReplica::HandleForwardRequest(const chain::FwdArg* request,
         reply->set_val("forwarded");
     } else {
         // If current replica is the tail then respond to the client
-        cout << "This is the tail, sent ack to client" << endl;
+        //cout << "This is the tail, sent ack to client" << endl;
         reply->set_val("sent-to-client");
     }
   }
@@ -122,7 +122,7 @@ void ChainReplica::HandleForwardRequest(const chain::FwdArg* request,
 
 // Handle requests in the forward queue.
 void ChainReplica::HandleForwardQueue() {
-  cout << "In handle forward queue" << endl;
+  //cout << "In handle forward queue" << endl;
   while (true) {
     bool forward_req = false;
     pair<string, pair<string, string> > p;
@@ -142,7 +142,7 @@ void ChainReplica::HandleForwardQueue() {
                                        p.second.second);
       } else {
         // If current replica is the tail then respond to the client
-        cout << "trying to send an ack to the client" << endl;
+        //cout << "trying to send an ack to the client" << endl;
         AcknowledgeClient(p.first, p.second.second);
       }
     }

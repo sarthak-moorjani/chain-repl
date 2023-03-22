@@ -52,7 +52,7 @@ void RPCClient::Put(string key, string value, string source_ip) {
   Status status = stub_->Put(&context, put_arg, &put_ret);
 
   if (status.ok()) {
-    std::cout << "put rpc completed" << endl;
+    //std::cout << "put rpc completed" << endl;
   } else {
     std::cout << status.error_code() << ": " << status.error_message()
               << std::endl;
@@ -71,7 +71,7 @@ string RPCClient::Get(string key) {
   Status status = stub_->Get(&context, get_arg, &get_ret);
 
   if (status.ok()) {
-    std::cout << "get rpc completed" << endl;
+    //std::cout << "get rpc completed" << endl;
     return get_ret.value();
   } else {
     std::cout << status.error_code() << ": " << status.error_message()
@@ -94,7 +94,7 @@ void RPCClient::Forward(string key, string value, string source_ip) {
   Status status = stub_->Forward(&context, fwd_arg, &fwd_ret);
 
   if (status.ok()) {
-    std::cout << "forward rpc completed" << endl;
+   // std::cout << "forward rpc completed" << endl;
   } else {
     std::cout << status.error_code() << ": " << status.error_message()
               << std::endl;
@@ -113,7 +113,7 @@ void RPCClient::Ack(string key) {
   Status status = stub_->Ack(&context, ack_arg, &ack_ret);
 
   if (status.ok()) {
-    std::cout << "ack rpc completed" << endl;
+  //  std::cout << "ack rpc completed" << endl;
   } else {
     std::cout << status.error_code() << ": " << status.error_message()
               << std::endl;

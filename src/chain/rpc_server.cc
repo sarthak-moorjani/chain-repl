@@ -34,7 +34,7 @@ Status RPCServer::Put(ServerContext* context,
                       const chain::PutArg* request,
                       chain::PutRet* reply) {
 
-  cout << "In RPC Server Put" << endl;
+  //cout << "In RPC Server Put" << endl;
   chain_replica_->HandleReplicaPut(request, reply);
   return Status::OK;
 }
@@ -44,7 +44,7 @@ Status RPCServer::Put(ServerContext* context,
 Status RPCServer::Forward(ServerContext* context,
 		                      const chain::FwdArg* fwd_request,
 			                    chain::FwdRet* fwd_reply) {
-  cout << "In RPC Server Forward" << endl;
+  //cout << "In RPC Server Forward" << endl;
   chain_replica_->HandleForwardRequest(fwd_request, fwd_reply);
   return Status::OK;
 }
@@ -54,7 +54,7 @@ Status RPCServer::Forward(ServerContext* context,
 Status RPCServer::Get(ServerContext* context,
                       const chain::GetArg* get_request,
                       chain::GetRet* get_reply) {
-  cout << "In RPC Server Get" << endl;
+  //cout << "In RPC Server Get" << endl;
   return chain_replica_->HandleGetRequest(get_request, get_reply);
   //return Status::OK;
 }
