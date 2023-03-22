@@ -5,7 +5,7 @@ if [ $# -lt 2 ]; then
   exit 1
 fi
 
-PORT=":50054"
+PORT=50054
 CLIENTSERVER=
 while IFS= read -r line; do
 				SERVERID=$(echo $line | cut -d "," -f 1)
@@ -23,7 +23,7 @@ USER="$2"
 yum update
 #sudo apt-get install parallel
 
-clients=1
+clients=2
 
 # change working directory from scripts
 pushd ../
@@ -73,10 +73,16 @@ echo $(pwd)
 COUNTER=1
 for input_file in "${input_files[@]}"; do
 				if [ $COUNTER -lt $clients ]; then
+								CLIENTPORT="${CLIENTSERVER}:${PORT}"
+								echo "$CLIENTPORT"
 								./chain_client $CLIENTPORT $input_file $CONFIGFILE $USER > $COUNTER.out &
 				fi
 				COUNTER=$(expr $COUNTER + 1)
+				PORT=$(expr $PORT + 1)
 done
+
+CLIENTPORT="${CLIENTSERVER}:${PORT}"
+echo "$CLIENTPORT"
 ./chain_client $CLIENTPORT ${input_files[-1]} $CONFIGFILE $USER
 
 #parallel run_cpp_executable {} ::: "1" "${input_files[@]}"
