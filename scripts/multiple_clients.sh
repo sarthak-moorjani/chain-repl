@@ -5,7 +5,7 @@ if [ $# -lt 2 ]; then
   exit 1
 fi
 
-PORT=50054
+PORT=50060
 CLIENTSERVER=
 while IFS= read -r line; do
 				SERVERID=$(echo $line | cut -d "," -f 1)
@@ -23,7 +23,7 @@ USER="$2"
 yum update
 #sudo apt-get install parallel
 
-clients=2
+clients=24
 
 # change working directory from scripts
 pushd ../

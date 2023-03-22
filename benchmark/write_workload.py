@@ -8,7 +8,7 @@ def get_random_string(length):
     return result_str
 
 clients = 32
-total_keys = 1000
+total_keys = 1000 * 100
 for i in range(clients):
     with open('../inputs/write_workload/write_workload_input_' + str(i) + '.txt', 'w') as f:
         print("Writing to file: \n")

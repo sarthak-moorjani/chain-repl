@@ -43,6 +43,7 @@ void ChainClient::RunServer(string server_port) {
 //-----------------------------------------------------------------------------
 
 void ChainClient::HandleReceiveRequest(const AckArg* ack_arg) {
+  //cout << "received ack" << endl;
   next_ops_ctr_++;
 }
 
@@ -130,7 +131,7 @@ int main(int argc, char* argv[]) {
   sleep(5);
 
   ifstream input_file;
-  string input_file_path = "/home/" + user + "/chain-repl/inputs/write_workload/" + argv[2];
+  string input_file_path = "/users/" + user + "/chain-repl/inputs/write_workload/" + argv[2];
   cout << input_file_path << endl;
   input_file.open(input_file_path);
 
