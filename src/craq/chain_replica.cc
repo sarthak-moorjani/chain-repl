@@ -196,8 +196,8 @@ void ChainReplica::HandleFinalizeQueue() {
       }
     }
     if (fin_request) {
-      cout << "Sending to parent to mark final" << endl;
       if (replica_map_.find(id_ - 1) != replica_map_.end()) {
+        cout << "Sending to parent to mark final" << endl;
         replica_map_[id_ - 1]->FinalizeKey(key);
       }
     }

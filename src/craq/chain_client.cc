@@ -143,8 +143,8 @@ int main(int argc, char* argv[]) {
       std::getline(input_file, input_line);
       istringstream ss(input_line);
       string word;
-      //if (counter == 100)
-      //  break;
+      if (counter == 1)
+        break;
       while (ss >> word) {
         if (word.size() == 3) {
           chain_client.operations_queue_.push(word);
