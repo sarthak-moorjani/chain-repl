@@ -60,6 +60,7 @@ Status RPCServer::FinalizeKey(grpc::ServerContext* context,
 
   cout << "In rpc server finalize key " << endl;
   chain_replica_->HandleFinalizeKey(fin_key_arg, fin_key_ret);
+  return Status::OK;
 }
 
 //-----------------------------------------------------------------------------
