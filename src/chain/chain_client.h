@@ -7,6 +7,7 @@
 #ifndef CHAIN_CLIENT_H
 #define CHAIN_CLIENT_H
 
+#include <atomic>
 #include <chrono>
 #include <iostream>
 #include <memory>
@@ -33,9 +34,6 @@ class ChainClient {
   // RPC Client for the tail.
   shared_ptr<RPCClient> tail_rpc_client_;
 
-  // Function to perform next operation
-  void NextOperation();
-
  public:
   // Constructor.
   ChainClient(std::vector<std::string> target_strs =
@@ -43,6 +41,9 @@ class ChainClient {
 
   // Run the server.
   void RunServer(std::string ip);
+
+  // Function to perform next operation
+  void NextOperation();
 
   // Handle receive request.
   void HandleReceiveRequest(const chain::AckArg* ack_arg);
@@ -65,8 +66,10 @@ class ChainClient {
   // Client IP
   std::string client_ip_;
 
+  // Counter for next ops.
+  std::atomic<int> next_ops_ctr_;
   // End time of all experiments.
-  std::chrono::time_point<std::chrono::high_resolution_clock> end_time_;
+  // std::chrono::time_point<std::chrono::high_resolution_clock> end_time_;
 };
 
 #endif

@@ -27,7 +27,8 @@ using namespace std;
 
 ChainClient::ChainClient(vector<string> target_strs) :
   rpc_client_(make_shared<RPCClient>(target_strs[0])),
-  tail_rpc_client_(make_shared<RPCClient>(target_strs[target_strs.size() - 1])) {
+  tail_rpc_client_(make_shared<RPCClient>(target_strs[target_strs.size() - 1])),
+  next_ops_ctr_(0) {
 
 }
 
@@ -43,10 +44,11 @@ void ChainClient::RunServer(string server_port) {
 void ChainClient::HandleReceiveRequest(const AckArg* ack_arg) {
   cout << "In chain client, received ack for key: "
        << ack_arg->key() << endl;
-  operations_queue_.pop();
-  keys_queue_.pop();
-  values_queue_.pop();
-  NextOperation();
+  //operations_queue_.pop();
+  //keys_queue_.pop();
+  //values_queue_.pop();
+  next_ops_ctr_++;
+  cout << "pop complte" << endl;
 }
 
 //-----------------------------------------------------------------------------
@@ -60,25 +62,34 @@ void ChainClient::Put(string key, string value, string source_ip) {
 void ChainClient::Get(string key) {
   string val = tail_rpc_client_->Get(key);
   cout << "Got value " << val << endl;
-  operations_queue_.pop();
-  keys_queue_.pop();
-  NextOperation();
+  next_ops_ctr_++;
 }
 
 //-----------------------------------------------------------------------------
 
 void ChainClient::NextOperation() {
-  if (operations_queue_.size() == 0) {
-    cout << "All operations complete" << endl;
-    end_time_ = std::chrono::high_resolution_clock::now();
-    return;
-  }
-
-  string operation = operations_queue_.front();
-  if (strcmp(operation.c_str(), "get") == 0) {
-    Get(keys_queue_.front());
-  } else if (strcmp(operation.c_str(), "put") == 0) {
-    Put(keys_queue_.front(), values_queue_.front(), client_ip_);
+  while (1) {
+    if (operations_queue_.size() == 0) {
+      cout << "All operations complete" << endl;
+      //end_time_ = std::chrono::high_resolution_clock::now();
+      return;
+    }
+    if (next_ops_ctr_ > 0) {
+      next_ops_ctr_--;
+      string operation = operations_queue_.front();
+      operations_queue_.pop();
+      if (strcmp(operation.c_str(), "get") == 0) {
+        string key = keys_queue_.front();
+        keys_queue_.pop();
+        Get(key);
+      } else if (strcmp(operation.c_str(), "put") == 0) {
+        string key = keys_queue_.front();
+        keys_queue_.pop();
+        string value = values_queue_.front();
+        values_queue_.pop();
+        Put(key, value, client_ip_);
+      }
+    }
   }
 }
 
@@ -137,19 +148,16 @@ int main(int argc, char* argv[]) {
       std::getline(input_file, input_line);
       istringstream ss(input_line);
       string word;
+      //if (counter == 100)
+      //  break;
       while (ss >> word) {
         if (word.size() == 3) {
           chain_client.operations_queue_.push(word);
           counter++;
-          cout << counter << endl;
         } else if (word.size() == 24) {
           chain_client.keys_queue_.push(word);
-          counter++;
-          cout << counter << endl;
         } else {
           chain_client.values_queue_.push(word);
-          counter++;
-          cout << counter << endl;
         }
       }
     }
@@ -159,7 +167,7 @@ int main(int argc, char* argv[]) {
   }
 
   cout << "Size of keys_queue_ is" << chain_client.keys_queue_.size() << endl;
-  auto start=std::chrono::high_resolution_clock::now();;
+  auto start=std::chrono::high_resolution_clock::now();
   if (strcmp(chain_client.operations_queue_.front().c_str(), "put") == 0) {
     chain_client.Put(chain_client.keys_queue_.front(),
                      chain_client.values_queue_.front(),
@@ -168,10 +176,15 @@ int main(int argc, char* argv[]) {
     chain_client.Get(chain_client.keys_queue_.front());
   }
 
-  auto elapsed = chain_client.end_time_ - start;
-  long long microseconds = chrono::duration_cast<chrono::microseconds> 
-                                                (elapsed).count();
-  cout << "Time taken " << microseconds << endl;
+  thread t2(&ChainClient::NextOperation, &chain_client);
+  t2.join();
+  cout << "hello 1" << endl;
+  //auto elapsed = chain_client.end_time_ - start;
+  cout << "hello 2" << endl;
+  //long long microseconds = chrono::duration_cast<chrono::microseconds> 
+  //                                              (elapsed).count();
+  cout << "hello 3" << endl;
+  //cout << "Time taken " << microseconds << endl;
 
   t1.join();
 }

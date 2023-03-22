@@ -157,12 +157,10 @@ void ChainReplica::AcknowledgeClient(string key, string source_ip) {
     client_map_[source_ip]->Ack(key);
   } else {
   // Add the new client to the map and then send the ack to client.
-    std::shared_ptr<RPCClient> rpc_client =
-    make_shared<RPCClient>(source_ip);
+    std::shared_ptr<RPCClient> rpc_client = make_shared<RPCClient>(source_ip);
     client_map_[source_ip] = rpc_client;
     rpc_client->Ack(key);
   }
-  cout << "Sending the ack to the client" << endl;
 }
 
 //-----------------------------------------------------------------------------
