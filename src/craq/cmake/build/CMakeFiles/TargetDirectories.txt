@@ -1,8 +1,0 @@
-/users/sarthakm/chain-repl/src/craq/cmake/build/CMakeFiles/chain_proto.dir
-/users/sarthakm/chain-repl/src/craq/cmake/build/CMakeFiles/rpc_client.dir
-/users/sarthakm/chain-repl/src/craq/cmake/build/CMakeFiles/rpc_server.dir
-/users/sarthakm/chain-repl/src/craq/cmake/build/CMakeFiles/client_rpc_server.dir
-/users/sarthakm/chain-repl/src/craq/cmake/build/CMakeFiles/chain_replica.dir
-/users/sarthakm/chain-repl/src/craq/cmake/build/CMakeFiles/chain_client.dir
-/users/sarthakm/chain-repl/src/craq/cmake/build/CMakeFiles/edit_cache.dir
-/users/sarthakm/chain-repl/src/craq/cmake/build/CMakeFiles/rebuild_cache.dir

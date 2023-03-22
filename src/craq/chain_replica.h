@@ -54,6 +54,10 @@ class ChainReplica {
   grpc::Status HandleGetRequest(const chain::GetArg* get_arg,
                         chain::GetRet* get_reply);
 
+  // Handle the finalize key request.
+  void HandleFinalizeKey(const chain::FinalizeKeyArg* fin_key_arg,
+                         chain::FinalizeKeyRet* fin_key_ret);
+
  private:
   // Ack client.
   void AcknowledgeClient(std::string key, std::string source_ip);
@@ -86,7 +90,7 @@ class ChainReplica {
   std::mutex forward_mutex_;
 
   // Map to hold the key value data sent by the user
-  std::unordered_map<std::string, std::string> kv_store_;
+  std::unordered_map<std::string, std::pair<std::string, bool>> kv_store_;
 
   // Mutex for protecting the kv store map.
   std::mutex store_mutex_;

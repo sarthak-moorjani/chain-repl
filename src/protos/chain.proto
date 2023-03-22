@@ -21,6 +21,9 @@ service ChainImpl {
 
   // Read request.
   rpc Get (GetArg) returns (GetRet) {}
+
+  // Unmark the dirty bit.
+  rpc FinalizeKey (FinalizeKeyArg) returns (FinalizeKeyRet) {}
 }
 
 // The argument for a put request.
@@ -75,3 +78,11 @@ message GetRet {
   // Value for the requested key.
   optional string value = 2;
 }
+
+// Back propagate acknowledgement from tail.
+message FinalizeKeyArg {
+  // Key for which dirty bit needs to be unset.
+  optional string key = 1;
+}
+
+message FinalizeKeyRet {}

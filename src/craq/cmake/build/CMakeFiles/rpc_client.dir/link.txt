@@ -1,2 +1,0 @@
-/usr/bin/ar qc librpc_client.a CMakeFiles/rpc_client.dir/rpc_client.cc.o
-/usr/bin/ranlib librpc_client.a

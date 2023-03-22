@@ -49,7 +49,8 @@ void ChainReplica::HandleReplicaPut(const chain::PutArg* request,
   // Add data to the kv store.
   {
     std::unique_lock<std::mutex> lock(store_mutex_);
-    kv_store_[request->key()] = request->val();
+    kv_store_[request->key()] = make_pair(request->val(),
+                                          false /* is_final */);
   }
 
   {
@@ -80,6 +81,8 @@ void ChainReplica::HandlePutQueue() {
   }
 }
 
+//-----------------------------------------------------------------------------
+
 Status ChainReplica::HandleGetRequest(const chain::GetArg* get_arg,
                                     chain::GetRet* get_reply) {
 
@@ -87,7 +90,14 @@ Status ChainReplica::HandleGetRequest(const chain::GetArg* get_arg,
     return grpc::Status(grpc::StatusCode::NOT_FOUND, "Key not found");
   }
 
-  get_reply->set_value(kv_store_[get_arg->key()]);
+  if (kv_store_[get_arg->key()].second == true) {
+    get_reply->set_value(kv_store_[get_arg->key()].first);
+  } else {
+    cout << "asking key from tail" << endl;
+    get_reply->set_value("Key is dirty!");
+    // Get from the tail.
+  }
+
   return Status::OK;
 }
 
@@ -99,7 +109,8 @@ void ChainReplica::HandleForwardRequest(const chain::FwdArg* request,
 	// Add data in the kv store.
   {
     std::unique_lock<std::mutex> lock(store_mutex_);
-    kv_store_[request->key()] = request->val();
+    kv_store_[request->key()] = make_pair(request->val(),
+                                          false /* is_final */);
   }
 	// Add the request to the forward queue.
   {
@@ -116,6 +127,13 @@ void ChainReplica::HandleForwardRequest(const chain::FwdArg* request,
         reply->set_val("sent-to-client");
     }
   }
+}
+
+//-----------------------------------------------------------------------------
+
+void ChainReplica::HandleFinalizeKey(const chain::FinalizeKeyArg* fin_key_arg,
+                                     chain::FinalizeKeyRet* fin_key_ret) {
+  // Fill this!
 }
 
 //-----------------------------------------------------------------------------
