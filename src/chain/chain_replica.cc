@@ -153,7 +153,7 @@ void ChainReplica::HandleForwardQueue() {
 
 void ChainReplica::AcknowledgeClient(string key, string source_ip) {
   // Checking if the client is already known, then simply send the ack.
-  cout << "sending ack to " << source_ip << endl;
+//  cout << "sending ack to " << source_ip << endl;
   if (client_map_.find(source_ip) != client_map_.end()) {
     client_map_[source_ip]->Ack(key);
   } else {

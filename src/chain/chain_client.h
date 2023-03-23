@@ -54,6 +54,12 @@ class ChainClient {
   // Create a Get request.
   void Get(string key);
 
+  // Init the queue with input data
+  void InitQueue(string file_path);
+
+  // Make the first operation call.
+  void FirstCall();
+
   // Operations queue.
   std::queue<std::string> operations_queue_;
 

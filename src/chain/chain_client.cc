@@ -11,6 +11,7 @@
 
 #include <assert.h>
 #include <fstream>
+#include <iostream>
 #include <sstream>
 #include <thread>
 #include <unistd.h>
@@ -57,6 +58,9 @@ void ChainClient::Put(string key, string value, string source_ip) {
 
 void ChainClient::Get(string key) {
   string val = tail_rpc_client_->Get(key);
+  //if (!val.empty()) {
+  //  cout << val << endl;
+  //}
   next_ops_ctr_++;
 }
 
@@ -87,7 +91,48 @@ void ChainClient::NextOperation() {
     }
   }
 }
+//-----------------------------------------------------------------------------
 
+void ChainClient::InitQueue(string file_path) {
+  ifstream input_file;
+  input_file.open(file_path);
+
+  string input_line;
+
+  int counter = 0;
+  if (input_file.is_open()) {
+    while (input_file) {
+      std::getline(input_file, input_line);
+      istringstream ss(input_line);
+      string word;
+      //if (counter == 5000)
+      //  break;
+      while (ss >> word) {
+        if (word.size() == 3) {
+          operations_queue_.push(word);
+          counter++;
+        } else if (word.size() == 24) {
+          keys_queue_.push(word);
+        } else {
+          values_queue_.push(word);
+        }
+      }
+    }
+    input_file.close();
+  } else {
+    cout << "cannot find input file, run random_gen file in benchmark" << endl;
+  }
+}
+
+//-----------------------------------------------------------------------------
+
+void ChainClient::FirstCall() {
+  if (strcmp(operations_queue_.front().c_str(), "put") == 0) {
+    Put(keys_queue_.front(), values_queue_.front(),client_ip_);
+  } else if (strcmp(operations_queue_.front().c_str(), "get") == 0) {
+    Get(keys_queue_.front());
+  }
+}
 
 //-----------------------------------------------------------------------------
 
@@ -130,53 +175,36 @@ int main(int argc, char* argv[]) {
   thread t1(&ChainClient::RunServer, &chain_client, client_port);
   sleep(5);
 
-  ifstream input_file;
   string input_file_path = "/users/" + user + "/chain-repl/inputs/write_workload/" + argv[2];
-  cout << input_file_path << endl;
-  input_file.open(input_file_path);
-
-  string input_line;
-
-  int counter = 0;
-  if (input_file.is_open()) {
-    while (input_file) {
-      std::getline(input_file, input_line);
-      istringstream ss(input_line);
-      string word;
-      //if (counter == 100)
-      //  break;
-      while (ss >> word) {
-        if (word.size() == 3) {
-          chain_client.operations_queue_.push(word);
-          counter++;
-        } else if (word.size() == 24) {
-          chain_client.keys_queue_.push(word);
-        } else {
-          chain_client.values_queue_.push(word);
-        }
-      }
-    }
-    input_file.close();
-  } else {
-    cout << "cannot find input file, run random_gen file in benchmark" << endl;
-  }
-
+  chain_client.InitQueue(input_file_path);
   cout << "Size of keys_queue_ is" << chain_client.keys_queue_.size() << endl;
-  auto start=std::chrono::high_resolution_clock::now();
-  if (strcmp(chain_client.operations_queue_.front().c_str(), "put") == 0) {
-    chain_client.Put(chain_client.keys_queue_.front(),
-                     chain_client.values_queue_.front(),
-                     chain_client.client_ip_);
-  } else if (strcmp(chain_client.operations_queue_.front().c_str(), "get") == 0) {
-    chain_client.Get(chain_client.keys_queue_.front());
-  }
+  auto start_put=std::chrono::high_resolution_clock::now();
+  chain_client.FirstCall();
 
   thread t2(&ChainClient::NextOperation, &chain_client);
   t2.join();
   cout << "hello 1" << endl; 
-  auto elapsed = chain_client.end_time_ - start;
-  long long microseconds = chrono::duration_cast<chrono::microseconds>(elapsed).count();
-  cout << "Time taken " << microseconds << endl;
+  auto elapsed_put = chain_client.end_time_ - start_put;
+  long long microseconds = chrono::duration_cast<chrono::microseconds>(elapsed_put).count();
+  cout << "Time taken for put " << microseconds << endl;
+
+  string write_string = "write";
+  int str_index;
+  while((str_index = input_file_path.find(write_string)) != string::npos) {
+      input_file_path.replace(str_index, write_string.length(), "read");
+  }
+
+  chain_client.InitQueue(input_file_path);
+  cout << "Size of keys_queue_ is" << chain_client.keys_queue_.size() << endl;
+  auto start_get = std::chrono::high_resolution_clock::now();
+  chain_client.FirstCall();
+
+  thread t3(&ChainClient::NextOperation, &chain_client);
+  t3.join();
+  cout << "hello 2" << endl;
+  auto elapsed_get = chain_client.end_time_ - start_get;
+  microseconds = chrono::duration_cast<chrono::microseconds>(elapsed_get).count();
+  cout << "Time taken for get " << microseconds << endl;
 
   t1.join();
 }

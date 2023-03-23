@@ -8,15 +8,14 @@ def get_random_string(length):
     result_str = ''.join(random.choice(letters) for i in range(length))
     return result_str
 
-all_keys = set(line.strip().split()[1] for line in open('../inputs/input.txt')
-               if line.strip().startswith("put "))
-
 total_keys = 100000
 keys_present = int(0.5 * total_keys)
 
-print(len(all_keys))
+#print(len(all_keys))
 
 for i in range(clients):
+    all_keys = set(line.strip().split()[1] for line in open('../inputs/write_workload/write_workload_input_' + str(i) + ".txt")
+               if line.strip().startswith("put "))
     selected_keys = set(random.sample(all_keys, keys_present))
     while len(selected_keys) < total_keys:
         new_key = get_random_string(24)
@@ -26,7 +25,7 @@ for i in range(clients):
     selected_keys = list(selected_keys)
     random.shuffle(selected_keys)
 
-    with open(f'read_workload_input__{i}.txt', 'w') as f:
+    with open(f'../inputs/read_workload/read_workload_input_' + str(i) + '.txt', 'w') as f:
         f.writelines(f"get {key}\n" for key in selected_keys)
 
     print(f'read_workload_input_{i}.txt - Done')
