@@ -103,6 +103,9 @@ class ChainReplica {
 
   // Mutex for protecting the finalize queue.
   std::mutex finalize_mutex_;
+
+  // The tail replica
+  const int tail_replica_id_;
 };
 
 #endif
