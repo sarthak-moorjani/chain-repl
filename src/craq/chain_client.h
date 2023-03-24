@@ -37,8 +37,7 @@ class ChainClient {
 
  public:
   // Constructor.
-  ChainClient(std::vector<std::string> target_strs =
-                std::vector<std::string> (),
+  ChainClient(std::vector<std::string> target_strs,
               std::vector<int> target_ids,
               int head_id);
 
@@ -62,6 +61,9 @@ class ChainClient {
 
   // Make the first operation call.
   void FirstCall();
+
+  // Method to test the code changes
+  void TestMethod(std::string op);
 
   // Operations queue.
   std::queue<std::string> operations_queue_;
