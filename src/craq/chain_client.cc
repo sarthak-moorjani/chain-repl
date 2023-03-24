@@ -144,9 +144,14 @@ void ChainClient::TestMethod(string op) {
   static const char alpha[] = "abcdefghijklmnopqrstuvwxyz";
   string key;
   string value;
+  vector<string> keys;
   key.reserve(24);
   value.reserve(10);
   for (int j = 1; j <= 100; j++) {
+    operations_queue_.push(op);
+    if (strcmp(op.c_str(), "get") == 0) {
+      continue;
+    }
     for (int i = 0; i < 24; i++) {
       key += alpha[rand() % (sizeof(alpha) - 1)];
     }
@@ -156,10 +161,15 @@ void ChainClient::TestMethod(string op) {
       }
       values_queue_.push(value);
       value.resize(0);
+      keys_queue_.push(key);
+      keys.push_back(key);
+      key.resize(0);
     }
-    operations_queue_.push(op);
-    keys_queue_.push(key);
-    key.resize(0);
+  }
+  if (strcmp(op.c_str(), "put") == 0) {
+    for (int j = 0; j < 100; j++) {
+      keys_queue_.push(keys[j]);
+    }
   }
 }
 //-----------------------------------------------------------------------------
