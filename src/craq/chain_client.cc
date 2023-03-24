@@ -60,8 +60,9 @@ void ChainClient::Put(string key, string value, string source_ip) {
 //-----------------------------------------------------------------------------
 
 void ChainClient::Get(string key) {
-  srand(time(NULL));
+  //srand(time(NULL));
   int random_replica = rand() % 3 + 1;
+  cout << "fetching from replica " << random_replica << endl;
   string val = replica_map_[random_replica]->Get(key);
   cout << "Received val : " << val << endl;
   next_ops_ctr_++;
