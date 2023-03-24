@@ -1,7 +1,7 @@
 import random
 import string
 
-clients = 32
+clients = 80
 
 def get_random_string(length):
     letters = string.ascii_lowercase
