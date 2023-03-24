@@ -69,6 +69,9 @@ void ChainClient::Get(string key, int replica_id) {
   auto start = std::chrono::high_resolution_clock::now();
   string val = replica_map_[replica_id]->Get(key);
   auto end = std::chrono::high_resolution_clock::now();
+  if (val.empty()) {
+    key_counter_++;
+  }
   get_latency_tracker_[key] = make_pair(start, end);
   cout << "Received val : " << val << endl;
   next_ops_ctr_++;
@@ -241,8 +244,10 @@ int main(int argc, char* argv[]) {
 
   string input_file_path = "/users/" + user + "/chain-repl/inputs/write_workload/" + argv[2];
   cout << input_file_path << endl;
-  //chain_client.InitQueue(input_file_path);
-  chain_client.TestMethod("put");
+  chain_client.InitQueue(input_file_path);
+  //chain_client.TestMethod("put");
+
+  chain_client.key_counter_ = 0;
 
   cout << "Size of keys_queue_ is" << chain_client.keys_queue_.size() << endl;
   auto start_put=std::chrono::high_resolution_clock::now();
@@ -261,8 +266,8 @@ int main(int argc, char* argv[]) {
         input_file_path.replace(str_index, write_string.length(), "read");
     }
 
-  //chain_client.InitQueue(input_file_path);
-  chain_client.TestMethod("get");
+  chain_client.InitQueue(input_file_path);
+  //chain_client.TestMethod("get");
   cout << "Size of keys_queue_ is" << chain_client.keys_queue_.size() << endl;
   auto start_get = std::chrono::high_resolution_clock::now();
   chain_client.FirstCall();
@@ -273,6 +278,7 @@ int main(int argc, char* argv[]) {
   auto elapsed_get = chain_client.end_time_ - start_get;
   microseconds = chrono::duration_cast<chrono::microseconds>(elapsed_get).count();
   cout << "Time taken for get " << microseconds << endl;
+  cout << "Keys not found " << key_counter_ << endl;
 
   t1.join();
 }

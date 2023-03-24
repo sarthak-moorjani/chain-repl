@@ -37,6 +37,9 @@ class ChainClient {
   const int head_replica_id_;
 
  public:
+
+  int key_counter_;
+ public:
   // Constructor.
   ChainClient(std::vector<std::string> target_strs,
               std::vector<int> target_ids,
