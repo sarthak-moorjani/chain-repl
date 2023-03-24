@@ -58,9 +58,10 @@ void ChainClient::Put(string key, string value, string source_ip) {
 
 void ChainClient::Get(string key) {
   string val = tail_rpc_client_->Get(key);
-  //if (!val.empty()) {
-  //  cout << val << endl;
-  //}
+  if (val.empty()) {
+    //cout << val << endl;
+    key_counter_++;
+  }
   next_ops_ctr_++;
 }
 
@@ -179,6 +180,7 @@ int main(int argc, char* argv[]) {
   chain_client.InitQueue(input_file_path);
   cout << "Size of keys_queue_ is" << chain_client.keys_queue_.size() << endl;
   auto start_put=std::chrono::high_resolution_clock::now();
+  chain_client.key_counter_ = 0;
   chain_client.FirstCall();
 
   thread t2(&ChainClient::NextOperation, &chain_client);
@@ -205,6 +207,7 @@ int main(int argc, char* argv[]) {
   auto elapsed_get = chain_client.end_time_ - start_get;
   microseconds = chrono::duration_cast<chrono::microseconds>(elapsed_get).count();
   cout << "Time taken for get " << microseconds << endl;
+  cout << "Keys not found " << chain_client.key_counter_ << endl;
 
   t1.join();
 }

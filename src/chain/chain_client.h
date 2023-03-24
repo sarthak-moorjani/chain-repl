@@ -72,6 +72,9 @@ class ChainClient {
   // Client IP
   std::string client_ip_;
 
+  // Keys not found counter.
+  int key_counter_;
+
   // Counter for next ops.
   std::atomic<int> next_ops_ctr_;
   // End time of all experiments.
