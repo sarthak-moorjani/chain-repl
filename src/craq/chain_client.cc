@@ -64,20 +64,20 @@ void ChainClient::Put(string key, string value, string source_ip) {
 
 //-----------------------------------------------------------------------------
 
-void ChainClient::Get(string key) {
+void ChainClient::Get(string key, int replica_id) {
   //srand(time(NULL));
-  int random_replica = rand() % 3 + 1;
   auto start = std::chrono::high_resolution_clock::now();
-  string val = replica_map_[random_replica]->Get(key);
+  string val = replica_map_[replica_id]->Get(key);
   auto end = std::chrono::high_resolution_clock::now();
   get_latency_tracker_[key] = make_pair(start, end);
-  //cout << "Received val : " << val << endl;
+  cout << "Received val : " << val << endl;
   next_ops_ctr_++;
 }
 
 //-----------------------------------------------------------------------------
 
 void ChainClient::NextOperation() {
+  int replica_id = 0;
   while (1) {
     if (operations_queue_.size() == 0) {
       end_time_ = std::chrono::high_resolution_clock::now();
@@ -108,7 +108,8 @@ void ChainClient::NextOperation() {
       if (strcmp(operation.c_str(), "get") == 0) {
         string key = keys_queue_.front();
         keys_queue_.pop();
-        Get(key);
+        replica_id = 1 + (replica_id + 1)%3;
+        Get(key, replica_id);
       } else if (strcmp(operation.c_str(), "put") == 0) {
         string key = keys_queue_.front();
         keys_queue_.pop();
@@ -159,7 +160,7 @@ void ChainClient::FirstCall() {
   if (strcmp(operations_queue_.front().c_str(), "put") == 0) {
     Put(keys_queue_.front(), values_queue_.front(),client_ip_);
   } else if (strcmp(operations_queue_.front().c_str(), "get") == 0) {
-    Get(keys_queue_.front());
+    Get(keys_queue_.front(), 1);
   }
 }
 

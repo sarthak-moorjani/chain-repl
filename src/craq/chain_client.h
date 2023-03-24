@@ -55,7 +55,7 @@ class ChainClient {
   void Put(std::string key, std::string value, std::string source_ip);
 
   // Create a Get request.
-  void Get(string key);
+  void Get(string key, int replica_id);
 
   // Init the queue with input data
   void InitQueue(string file_path);
