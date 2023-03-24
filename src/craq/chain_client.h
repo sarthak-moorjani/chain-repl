@@ -25,19 +25,22 @@ class ClientRPCServer;
 
 class ChainClient {
  private:
-  // RPC Client for the head.
-  shared_ptr<RPCClient> rpc_client_;
 
   // ClientRPCServer.
   shared_ptr<ClientRPCServer> client_rpc_server_;
 
-  // RPC Client for the tail.
-  shared_ptr<RPCClient> tail_rpc_client_;
+  // Mapping from replica ID to RPC Clients.
+  std::unordered_map<int, std::shared_ptr<RPCClient> > replica_map_;
+
+  // Head replica id.
+  const int head_replica_id_;
 
  public:
   // Constructor.
   ChainClient(std::vector<std::string> target_strs =
-                std::vector<std::string> ());
+                std::vector<std::string> (),
+              std::vector<int> target_ids,
+              int head_id);
 
   // Run the server.
   void RunServer(std::string ip);
@@ -53,6 +56,12 @@ class ChainClient {
 
   // Create a Get request.
   void Get(string key);
+
+  // Init the queue with input data
+  void InitQueue(string file_path);
+
+  // Make the first operation call.
+  void FirstCall();
 
   // Operations queue.
   std::queue<std::string> operations_queue_;

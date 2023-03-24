@@ -94,7 +94,7 @@ Status ChainReplica::HandleGetRequest(const chain::GetArg* get_arg,
     cout << "asking key from tail" << endl;
     // Get from tail.
     string tail_val = replica_map_[tail_replica_id_]->Get(get_arg->key());
-    get_reply->set_value(tail_val);
+    get_reply->set_value(tail_val + " from tail");
   }
 
   return Status::OK;
