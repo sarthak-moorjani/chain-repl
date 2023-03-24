@@ -159,7 +159,7 @@ void ChainReplica::HandleForwardQueue() {
         AcknowledgeClient(p.first, p.second.second);
         // Add the request to the finalize queue.
         {
-          cout << "this is the tail, adding to finalize queue" << endl;
+          //cout << "this is the tail, adding to finalize queue" << endl;
           std::unique_lock<std::mutex> lock(finalize_mutex_);
           finalize_queue_.push(p.first);
         }
@@ -176,7 +176,7 @@ void ChainReplica::HandleFinalizeKey(const chain::FinalizeKeyArg* fin_key_arg,
   {
     std::unique_lock<std::mutex> lock(store_mutex_);
     string val = kv_store_[fin_key_arg->key()].first;
-    cout << "marking key " << fin_key_arg->key() << " final" << endl;
+    //cout << "marking key " << fin_key_arg->key() << " final" << endl;
     kv_store_[fin_key_arg->key()] = make_pair(val, true /* is_final */);
   }
 
@@ -203,7 +203,7 @@ void ChainReplica::HandleFinalizeQueue() {
     }
     if (fin_request) {
       if (replica_map_.find(id_ - 1) != replica_map_.end()) {
-        cout << "Sending to parent to mark final" << endl;
+        //cout << "Sending to parent to mark final" << endl;
         replica_map_[id_ - 1]->FinalizeKey(key);
       }
     }

@@ -60,10 +60,10 @@ void ChainClient::Put(string key, string value, string source_ip) {
 //-----------------------------------------------------------------------------
 
 void ChainClient::Get(string key) {
-  srand(time(NULL));
+  //srand(time(NULL));
   int random_replica = rand() % 3 + 1;
   string val = replica_map_[random_replica]->Get(key);
-  cout << "Received val : " << val << endl;
+  //cout << "Received val : " << val << endl;
   next_ops_ctr_++;
 }
 
@@ -215,8 +215,8 @@ int main(int argc, char* argv[]) {
 
   string input_file_path = "/users/" + user + "/chain-repl/inputs/write_workload/" + argv[2];
   cout << input_file_path << endl;
-  //chain_client.InitQueue(input_file_path);
-  chain_client.TestMethod("put");
+  chain_client.InitQueue(input_file_path);
+  //chain_client.TestMethod("put");
 
   cout << "Size of keys_queue_ is" << chain_client.keys_queue_.size() << endl;
   auto start_put=std::chrono::high_resolution_clock::now();
@@ -235,8 +235,8 @@ int main(int argc, char* argv[]) {
         input_file_path.replace(str_index, write_string.length(), "read");
     }
 
- // chain_client.InitQueue(input_file_path);
-  chain_client.TestMethod("get");
+  chain_client.InitQueue(input_file_path);
+  //chain_client.TestMethod("get");
   cout << "Size of keys_queue_ is" << chain_client.keys_queue_.size() << endl;
   auto start_get = std::chrono::high_resolution_clock::now();
   chain_client.FirstCall();
