@@ -278,7 +278,7 @@ int main(int argc, char* argv[]) {
   auto elapsed_get = chain_client.end_time_ - start_get;
   microseconds = chrono::duration_cast<chrono::microseconds>(elapsed_get).count();
   cout << "Time taken for get " << microseconds << endl;
-  cout << "Keys not found " << key_counter_ << endl;
+  cout << "Keys not found " << chain_client.key_counter_ << endl;
 
   t1.join();
 }
