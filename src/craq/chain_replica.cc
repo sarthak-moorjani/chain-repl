@@ -17,9 +17,9 @@ using namespace std;
 ChainReplica::ChainReplica(vector <int> replica_ids,
                            vector<string> replica_ips,
                            int replica_id, int tail_id) :
-  id_(replica_id) {
+  id_(replica_id),
+  tail_replica_id_(tail_id) {
   rpc_server_ = make_shared<RPCServer>(this);
-  tail_replica_id_ = tail_id;
 
   // Creating client for each replica in the chain
   for (int i = 0; i < replica_ids.size(); i++) {
@@ -250,12 +250,12 @@ int main(int argc, char* argv[]) {
           break;
         }
 		  // Get the id of other replicas
-	    int input_id = stoi((config_line.substr(0, config_line.find(",")));
+	    int input_id = stoi((config_line.substr(0, config_line.find(","))));
 		if (input_id > max_id) {
 		  max_id = input_id;
 		}
 		replica_ids.push_back(input_id);
-		replica_ips.push_back(config_line.substr(config_line.find(",") + 1););
+		replica_ips.push_back(config_line.substr(config_line.find(",") + 1));
       }
 	} else {
     cout << "Could not open file";
@@ -268,6 +268,7 @@ int main(int argc, char* argv[]) {
   cout << argv[1] << endl;
   int replica_id = std::stoi(argv[1]);
   cout << "Current replica id is " << replica_id << endl;
+  cout << "Tail replica id " << max_id << endl;
   ChainReplica chain_replica(replica_ids, replica_ips, replica_id, max_id);
   thread t1(&ChainReplica::HandlePutQueue, &chain_replica);
   thread t2(&ChainReplica::HandleForwardQueue, &chain_replica);

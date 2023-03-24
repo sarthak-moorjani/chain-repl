@@ -31,7 +31,7 @@ class ChainReplica {
   // Constructor.
   ChainReplica(std::vector<int> replica_ids,
                std::vector<std::string> replica_ips,
-               int replica_id);
+               int replica_id, int tail_id);
 
   // Run the server.
   void RunServer();
