@@ -73,7 +73,7 @@ void ChainClient::Get(string key, int replica_id) {
     key_counter_++;
   }
   get_latency_tracker_[key] = make_pair(start, end);
-  cout << "Received val : " << val << endl;
+  //cout << "Received val : " << val << endl;
   next_ops_ctr_++;
 }
 
@@ -92,7 +92,7 @@ void ChainClient::NextOperation() {
         total_microseconds += microseconds;
         // cout << microseconds << endl;
       }
-      cout << "Average for put is" << total_microseconds/100 << endl;
+      cout << "Average for put is" << total_microseconds/100000 << endl;
 
       total_microseconds = 0;
       for (auto t : get_latency_tracker_) {
@@ -101,7 +101,7 @@ void ChainClient::NextOperation() {
         total_microseconds += microseconds;
         //cout << microseconds << endl;
       }
-      cout << "Average for get is" << total_microseconds/100;
+      cout << "Average for get is" << total_microseconds/100000;
       return;
     }
     if (next_ops_ctr_ > 0) {
@@ -279,6 +279,5 @@ int main(int argc, char* argv[]) {
   microseconds = chrono::duration_cast<chrono::microseconds>(elapsed_get).count();
   cout << "Time taken for get " << microseconds << endl;
   cout << "Keys not found " << chain_client.key_counter_ << endl;
-
   t1.join();
 }

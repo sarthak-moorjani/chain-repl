@@ -89,7 +89,7 @@ Status ChainReplica::HandleGetRequest(const chain::GetArg* get_arg,
   }
 
   if (kv_store_[get_arg->key()].second == true) {
-    get_reply->set_value(kv_store_[get_arg->key()].first + "from" + to_string(id_));
+    get_reply->set_value(kv_store_[get_arg->key()].first);
   } else {
     cout << "asking key from tail" << endl;
     // Get from tail.

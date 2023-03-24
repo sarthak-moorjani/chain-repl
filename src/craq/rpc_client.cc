@@ -76,8 +76,8 @@ string RPCClient::Get(string key) {
     //std::cout << "get rpc completed" << endl;
     return get_ret.value();
   } else {
-    std::cout << status.error_code() << ": " << status.error_message()
-              << std::endl;
+    //std::cout << status.error_code() << ": " << status.error_message()
+    //          << std::endl;
     return "";
   }
 }
@@ -136,7 +136,7 @@ void RPCClient::FinalizeKey(string key) {
   if (status.ok()) {
     //  std::cout << "finalize rpc completed" << endl;
   } else {
-    std::cout << status.error_code() << ": " << status.error_message()
+     std::cout << status.error_code() << ": " << status.error_message()
               << std::endl;
   }
 }
