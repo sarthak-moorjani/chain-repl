@@ -24,8 +24,9 @@
 class ClientRPCServer;
 
 class ChainClient {
- private:
+ typedef std::chrono::time_point<std::chrono::high_resolution_clock> nowtime;
 
+ private:
   // ClientRPCServer.
   shared_ptr<ClientRPCServer> client_rpc_server_;
 
@@ -79,8 +80,15 @@ class ChainClient {
 
   // Counter for next ops.
   std::atomic<int> next_ops_ctr_;
+
   // End time of all experiments.
-  std::chrono::time_point<std::chrono::high_resolution_clock> end_time_;
+  nowtime end_time_;
+
+  // Put Latency times recorder.
+  map<std::string, pair<nowtime, nowtime>> put_latency_tracker_;
+
+  // Get Latency times recorder.
+  map<std::string, pair<nowtime, nowtime>> get_latency_tracker_;
 };
 
 #endif

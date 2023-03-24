@@ -49,11 +49,16 @@ void ChainClient::RunServer(string server_port) {
 void ChainClient::HandleReceiveRequest(const AckArg* ack_arg) {
   //cout << "received ack" << endl;
   next_ops_ctr_++;
+  auto end = std::chrono::high_resolution_clock::now();
+  pair<nowtime, nowtime> p = put_latency_tracker_[ack_arg->key()];
+  put_latency_tracker_[ack_arg->key()] = make_pair(p.first, end);
 }
 
 //-----------------------------------------------------------------------------
 
 void ChainClient::Put(string key, string value, string source_ip) {
+  auto start = std::chrono::high_resolution_clock::now();
+  put_latency_tracker_[key] = make_pair(start, start);
   replica_map_[head_replica_id_]->Put(key, value, source_ip);
 }
 
@@ -62,7 +67,10 @@ void ChainClient::Put(string key, string value, string source_ip) {
 void ChainClient::Get(string key) {
   //srand(time(NULL));
   int random_replica = rand() % 3 + 1;
+  auto start = std::chrono::high_resolution_clock::now();
   string val = replica_map_[random_replica]->Get(key);
+  auto end = std::chrono::high_resolution_clock::now();
+  get_latency_tracker_[key] = make_pair(start, end);
   //cout << "Received val : " << val << endl;
   next_ops_ctr_++;
 }
@@ -74,6 +82,23 @@ void ChainClient::NextOperation() {
     if (operations_queue_.size() == 0) {
       end_time_ = std::chrono::high_resolution_clock::now();
       cout << "All operations complete" << endl;
+      long long total_microseconds = 0;
+      for (auto t : put_latency_tracker_) {
+        auto elapsed = t.second.second - t.second.first;
+        long long microseconds = chrono::duration_cast<chrono::microseconds>(elapsed).count();
+        total_microseconds += microseconds;
+        // cout << microseconds << endl;
+      }
+      cout << "Average for put is" << total_microseconds/100 << endl;
+
+      total_microseconds = 0;
+      for (auto t : get_latency_tracker_) {
+        auto elapsed = t.second.second - t.second.first;
+        long long microseconds = chrono::duration_cast<chrono::microseconds>(elapsed).count();
+        total_microseconds += microseconds;
+        //cout << microseconds << endl;
+      }
+      cout << "Average for get is" << total_microseconds/100;
       return;
     }
     if (next_ops_ctr_ > 0) {
@@ -215,8 +240,8 @@ int main(int argc, char* argv[]) {
 
   string input_file_path = "/users/" + user + "/chain-repl/inputs/write_workload/" + argv[2];
   cout << input_file_path << endl;
-  chain_client.InitQueue(input_file_path);
-  //chain_client.TestMethod("put");
+  //chain_client.InitQueue(input_file_path);
+  chain_client.TestMethod("put");
 
   cout << "Size of keys_queue_ is" << chain_client.keys_queue_.size() << endl;
   auto start_put=std::chrono::high_resolution_clock::now();
@@ -235,8 +260,8 @@ int main(int argc, char* argv[]) {
         input_file_path.replace(str_index, write_string.length(), "read");
     }
 
-  chain_client.InitQueue(input_file_path);
-  //chain_client.TestMethod("get");
+  //chain_client.InitQueue(input_file_path);
+  chain_client.TestMethod("get");
   cout << "Size of keys_queue_ is" << chain_client.keys_queue_.size() << endl;
   auto start_get = std::chrono::high_resolution_clock::now();
   chain_client.FirstCall();
