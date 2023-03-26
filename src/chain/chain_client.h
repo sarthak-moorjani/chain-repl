@@ -24,20 +24,26 @@
 class ClientRPCServer;
 
 class ChainClient {
- private:
-  // RPC Client for the head.
-  shared_ptr<RPCClient> rpc_client_;
+ typedef std::chrono::time_point<std::chrono::high_resolution_clock> nowtime;
 
+ private:
   // ClientRPCServer.
   shared_ptr<ClientRPCServer> client_rpc_server_;
 
-  // RPC Client for the tail.
-  shared_ptr<RPCClient> tail_rpc_client_;
+  // Mapping from replica ID to RPC Clients.
+  std::unordered_map<int, std::shared_ptr<RPCClient> > replica_map_;
+
+  // Head replica id.
+  const int head_replica_id_;
 
  public:
+
+  int key_counter_;
+ public:
   // Constructor.
-  ChainClient(std::vector<std::string> target_strs =
-                std::vector<std::string> ());
+  ChainClient(std::vector<std::string> target_strs,
+              std::vector<int> target_ids,
+              int head_id);
 
   // Run the server.
   void RunServer(std::string ip);
@@ -52,13 +58,16 @@ class ChainClient {
   void Put(std::string key, std::string value, std::string source_ip);
 
   // Create a Get request.
-  void Get(string key);
+  void Get(string key, int replica_id);
 
   // Init the queue with input data
   void InitQueue(string file_path);
 
   // Make the first operation call.
   void FirstCall();
+
+  // Method to test the code changes
+  void TestMethod(std::string op);
 
   // Operations queue.
   std::queue<std::string> operations_queue_;
@@ -72,13 +81,17 @@ class ChainClient {
   // Client IP
   std::string client_ip_;
 
-  // Keys not found counter.
-  int key_counter_;
-
   // Counter for next ops.
   std::atomic<int> next_ops_ctr_;
+
   // End time of all experiments.
-  std::chrono::time_point<std::chrono::high_resolution_clock> end_time_;
+  nowtime end_time_;
+
+  // Put Latency times recorder.
+  map<std::string, pair<nowtime, nowtime>> put_latency_tracker_;
+
+  // Get Latency times recorder.
+  map<std::string, pair<nowtime, nowtime>> get_latency_tracker_;
 };
 
 #endif

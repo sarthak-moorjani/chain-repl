@@ -10,10 +10,11 @@
 #include "chain.grpc.pb.h"
 
 #include <assert.h>
+#include <cstdlib>
 #include <fstream>
-#include <iostream>
 #include <sstream>
 #include <thread>
+#include <time.h>
 #include <unistd.h>
 
 using chain::ChainImpl;
@@ -27,11 +28,13 @@ using namespace std;
 
 //-----------------------------------------------------------------------------
 
-ChainClient::ChainClient(vector<string> target_strs) :
-  rpc_client_(make_shared<RPCClient>(target_strs[0])),
-  tail_rpc_client_(make_shared<RPCClient>(target_strs[target_strs.size() - 1])),
-  next_ops_ctr_(0) {
+ChainClient::ChainClient(vector<string> target_strs, vector<int> target_ids, int head_id) :
+  next_ops_ctr_(0),
+  head_replica_id_(head_id) {
 
+  for (int i = 0; i < target_ids.size(); i++) {
+    replica_map_[target_ids[i]] = make_shared<RPCClient>(target_strs[i]);
+  }
 }
 
 //-----------------------------------------------------------------------------
@@ -46,32 +49,59 @@ void ChainClient::RunServer(string server_port) {
 void ChainClient::HandleReceiveRequest(const AckArg* ack_arg) {
   //cout << "received ack" << endl;
   next_ops_ctr_++;
+  auto end = std::chrono::high_resolution_clock::now();
+  pair<nowtime, nowtime> p = put_latency_tracker_[ack_arg->key()];
+  put_latency_tracker_[ack_arg->key()] = make_pair(p.first, end);
 }
 
 //-----------------------------------------------------------------------------
 
 void ChainClient::Put(string key, string value, string source_ip) {
-  rpc_client_->Put(key, value, source_ip);
+  auto start = std::chrono::high_resolution_clock::now();
+  put_latency_tracker_[key] = make_pair(start, start);
+  replica_map_[head_replica_id_]->Put(key, value, source_ip);
 }
 
 //-----------------------------------------------------------------------------
 
-void ChainClient::Get(string key) {
-  string val = tail_rpc_client_->Get(key);
+void ChainClient::Get(string key, int replica_id) {
+  //srand(time(NULL));
+  auto start = std::chrono::high_resolution_clock::now();
+  string val = replica_map_[3]->Get(key);
+  auto end = std::chrono::high_resolution_clock::now();
   if (val.empty()) {
-    //cout << val << endl;
     key_counter_++;
   }
+  get_latency_tracker_[key] = make_pair(start, end);
+  //cout << "Received val : " << val << endl;
   next_ops_ctr_++;
 }
 
 //-----------------------------------------------------------------------------
 
 void ChainClient::NextOperation() {
+  int replica_id = 0;
   while (1) {
     if (operations_queue_.size() == 0) {
       end_time_ = std::chrono::high_resolution_clock::now();
       cout << "All operations complete" << endl;
+      long long total_microseconds = 0;
+      for (auto t : put_latency_tracker_) {
+        auto elapsed = t.second.second - t.second.first;
+        long long microseconds = chrono::duration_cast<chrono::microseconds>(elapsed).count();
+        total_microseconds += microseconds;
+        // cout << microseconds << endl;
+      }
+      cout << "Average for put is" << total_microseconds/100000 << endl;
+
+      total_microseconds = 0;
+      for (auto t : get_latency_tracker_) {
+        auto elapsed = t.second.second - t.second.first;
+        long long microseconds = chrono::duration_cast<chrono::microseconds>(elapsed).count();
+        total_microseconds += microseconds;
+        //cout << microseconds << endl;
+      }
+      cout << "Average for get is" << total_microseconds/100000;
       return;
     }
     if (next_ops_ctr_ > 0) {
@@ -81,7 +111,8 @@ void ChainClient::NextOperation() {
       if (strcmp(operation.c_str(), "get") == 0) {
         string key = keys_queue_.front();
         keys_queue_.pop();
-        Get(key);
+        //replica_id = 1 + (replica_id + 1)%3;
+        Get(key, replica_id);
       } else if (strcmp(operation.c_str(), "put") == 0) {
         string key = keys_queue_.front();
         keys_queue_.pop();
@@ -92,6 +123,7 @@ void ChainClient::NextOperation() {
     }
   }
 }
+
 //-----------------------------------------------------------------------------
 
 void ChainClient::InitQueue(string file_path) {
@@ -131,42 +163,76 @@ void ChainClient::FirstCall() {
   if (strcmp(operations_queue_.front().c_str(), "put") == 0) {
     Put(keys_queue_.front(), values_queue_.front(),client_ip_);
   } else if (strcmp(operations_queue_.front().c_str(), "get") == 0) {
-    Get(keys_queue_.front());
+    Get(keys_queue_.front(), 1);
   }
 }
 
 //-----------------------------------------------------------------------------
 
+void ChainClient::TestMethod(string op) {
+  static const char alpha[] = "abcdefghijklmnopqrstuvwxyz";
+  string key;
+  string value;
+  vector<string> keys;
+  key.reserve(24);
+  value.reserve(10);
+  for (int j = 1; j <= 100; j++) {
+    operations_queue_.push(op);
+    if (strcmp(op.c_str(), "get") == 0) {
+      continue;
+    }
+    for (int i = 0; i < 24; i++) {
+      key += alpha[rand() % (sizeof(alpha) - 1)];
+    }
+    if (strcmp(op.c_str(), "put") == 0) {
+      for (int i = 0; i < 10; i++) {
+        value += alpha[rand() % (sizeof(alpha) - 1)];
+      }
+      values_queue_.push(value);
+      value.resize(0);
+      keys_queue_.push(key);
+      keys.push_back(key);
+      key.resize(0);
+    }
+  }
+  if (strcmp(op.c_str(), "put") == 0) {
+    for (int j = 0; j < 100; j++) {
+      keys_queue_.push(keys[j]);
+    }
+  }
+}
+//-----------------------------------------------------------------------------
+
 int main(int argc, char* argv[]) {
-  vector<string> server_ips(2);
+  vector<string> replica_ips;
+  std::vector<int> replica_ids;
 
   ifstream config_file;
   config_file.open(argv[3]);
+  int min_id = INT_MAX;
 
   cout << "input to client" << argv[1] << endl << argv[2] << endl << argv[3] << endl <<  argv[4] << endl;
   string config_line;
   string user = argv[4];
+
   if (config_file.is_open()) {
-    while (config_file) {
-      std::getline(config_file, config_line);
+  	  while (config_file) {
+  	    std::getline(config_file, config_line);
 
-      if (config_line.size() == 0) {
-        break;
+        if (config_line.size() == 0) {
+          break;
+        }
+  		// Get the id of all the replicas
+  	    int input_id = stoi((config_line.substr(0, config_line.find(","))));
+  		min_id = min(min_id, input_id);
+  		replica_ids.push_back(input_id);
+  		replica_ips.push_back(config_line.substr(config_line.find(",") + 1));
       }
-       // Get the id of first replica or head
-       if (stoi(config_line.substr(0, config_line.find(","))) == 1) {
-         server_ips[0] = config_line.substr(config_line.find(",") + 1);
-       }
-       if (stoi(config_line.substr(0, config_line.find(","))) == 3) {
-         server_ips[1] = config_line.substr(config_line.find(",") + 1);
-         break;
-       }
-    }
-  } else {
+  	} else {
       cout << "Could not open file";
-  }
+    }
 
-  ChainClient chain_client(server_ips);
+  ChainClient chain_client(replica_ips, replica_ids, min_id);
 
   chain_client.client_ip_ = argv[1];
 
@@ -177,10 +243,14 @@ int main(int argc, char* argv[]) {
   sleep(5);
 
   string input_file_path = "/users/" + user + "/chain-repl/inputs/write_workload/" + argv[2];
+  cout << input_file_path << endl;
   chain_client.InitQueue(input_file_path);
+  //chain_client.TestMethod("put");
+
+  chain_client.key_counter_ = 0;
+
   cout << "Size of keys_queue_ is" << chain_client.keys_queue_.size() << endl;
   auto start_put=std::chrono::high_resolution_clock::now();
-  chain_client.key_counter_ = 0;
   chain_client.FirstCall();
 
   thread t2(&ChainClient::NextOperation, &chain_client);
@@ -191,12 +261,13 @@ int main(int argc, char* argv[]) {
   cout << "Time taken for put " << microseconds << endl;
 
   string write_string = "write";
-  int str_index;
-  while((str_index = input_file_path.find(write_string)) != string::npos) {
-      input_file_path.replace(str_index, write_string.length(), "read");
-  }
+    int str_index;
+    while((str_index = input_file_path.find(write_string)) != string::npos) {
+        input_file_path.replace(str_index, write_string.length(), "read");
+    }
 
   chain_client.InitQueue(input_file_path);
+  //chain_client.TestMethod("get");
   cout << "Size of keys_queue_ is" << chain_client.keys_queue_.size() << endl;
   auto start_get = std::chrono::high_resolution_clock::now();
   chain_client.FirstCall();
@@ -208,6 +279,5 @@ int main(int argc, char* argv[]) {
   microseconds = chrono::duration_cast<chrono::microseconds>(elapsed_get).count();
   cout << "Time taken for get " << microseconds << endl;
   cout << "Keys not found " << chain_client.key_counter_ << endl;
-
   t1.join();
 }
