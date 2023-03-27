@@ -1,6 +1,7 @@
 # Build files
 src/chain/cmake/
 src/craq/cmake/
+src/beluga/cmake/
 
 # Prerequisites
 *.d
