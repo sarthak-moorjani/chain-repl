@@ -111,7 +111,7 @@ void ChainClient::NextOperation() {
       if (strcmp(operation.c_str(), "get") == 0) {
         string key = keys_queue_.front();
         keys_queue_.pop();
-        replica_id = 1 + (replica_id + 1)%3;
+        replica_id = 1 + (replica_id + 1)%7;
         Get(key, replica_id);
       } else if (strcmp(operation.c_str(), "put") == 0) {
         string key = keys_queue_.front();

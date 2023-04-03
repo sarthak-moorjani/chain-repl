@@ -23,7 +23,7 @@ USER="$2"
 yum update
 #sudo apt-get install parallel
 
-clients=1
+clients=72
 
 # change working directory from scripts
 pushd ../
