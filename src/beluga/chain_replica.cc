@@ -135,7 +135,7 @@ void ChainReplica::HandleForwardRequest(const chain::FwdArg* request,
     forward_queue_.push(queue_data);
     // If current replica is the tail then respond to the client
     //cout << "This is the tail, sent ack to client" << endl;
-    if ((((id_ + 1) % replica_count_) == 0 && (id_ + 1) == replica_count_) ||
+    if ((((id_ + 1) % replica_count_) == 0 && (id_ + 1) == request->head_id()) ||
         (id_ + 1) % replica_count_ == request->head_id()) {
       reply->set_val("sent-to-client");
     }
@@ -165,7 +165,7 @@ void ChainReplica::HandleForwardQueue() {
     }
     if (forward_req) {
       // If current replica is the tail then respond to the client
-      if ((((id_ + 1) % replica_count_) == 0 && (id_ + 1) == replica_count_) ||
+      if ((((id_ + 1) % replica_count_) == 0 && (id_ + 1) == p.head_id) ||
         (id_ + 1) % replica_count_ == p.head_id) {
         cout << "trying to send an ack to the client" << endl;
         AcknowledgeClient(p.key, p.source_ip);
