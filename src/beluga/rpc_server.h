@@ -37,15 +37,10 @@ class RPCServer final : public chain::ChainImpl::Service {
 		                     const chain::FwdArg* fwd_request,
 			                   chain::FwdRet* fwd_reply) override;
 
-    // RPC method to handle read requests from the tail.
+		// RPC method to handle read requests from the tail.
     grpc::Status Get(grpc::ServerContext* context,
                      const chain::GetArg* get_request,
                      chain::GetRet* get_reply) override;
-
-    // RPC method to handle the back propagation for a key.
-    grpc::Status FinalizeKey(grpc::ServerContext* context,
-                             const chain::FinalizeKeyArg* fin_key_arg,
-                             chain::FinalizeKeyRet* fin_key_ret);
 
  private:
   // Chain replica object.

@@ -43,16 +43,13 @@ class RPCClient {
   void Put(string key, string value, string source_ip);
 
   // Handle forward request
-  void Forward(string key, string value, string source_ip);
+  void Forward(string key, string value, string source_ip, int head_id = 0);
 
   // Handle the ack request.
   void Ack(string key);
 
   // Handle the Get request.
   std::string Get(string key);
-
-  // Handle the finalize key request.
-  void FinalizeKey(string key);
 };
 
 #endif

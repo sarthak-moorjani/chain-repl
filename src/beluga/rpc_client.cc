@@ -25,8 +25,6 @@ using chain::FwdArg;
 using chain::FwdRet;
 using chain::GetArg;
 using chain::GetRet;
-using chain::FinalizeKeyArg;
-using chain::FinalizeKeyRet;
 
 using namespace std;
 
@@ -84,11 +82,16 @@ string RPCClient::Get(string key) {
 
 //-----------------------------------------------------------------------------
 
-void RPCClient::Forward(string key, string value, string source_ip) {
+void RPCClient::Forward(string key, string value, string source_ip, 
+                        int head_id) {
   FwdArg fwd_arg;
   fwd_arg.set_key(key);
   fwd_arg.set_val(value);
   fwd_arg.set_source_ip(source_ip);
+
+  if (head_id > 0) {
+    fwd_arg.set_head_id(head_id);
+  }
 
   FwdRet fwd_ret;
 
@@ -118,25 +121,6 @@ void RPCClient::Ack(string key) {
   //  std::cout << "ack rpc completed" << endl;
   } else {
     std::cout << status.error_code() << ": " << status.error_message()
-              << std::endl;
-  }
-}
-
-//-----------------------------------------------------------------------------
-
-void RPCClient::FinalizeKey(string key) {
-  FinalizeKeyArg fin_key_arg;
-  fin_key_arg.set_key(key);
-
-  FinalizeKeyRet fin_key_ret;
-
-  ClientContext context;
-  Status status = stub_->FinalizeKey(&context, fin_key_arg, &fin_key_ret);
-
-  if (status.ok()) {
-    //  std::cout << "finalize rpc completed" << endl;
-  } else {
-     std::cout << status.error_code() << ": " << status.error_message()
               << std::endl;
   }
 }

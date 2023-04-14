@@ -34,7 +34,7 @@ class ChainClient {
   std::unordered_map<int, std::shared_ptr<RPCClient> > replica_map_;
 
   // Head replica id.
-  const int head_replica_id_;
+  const int replica_count_;
 
  public:
 
@@ -42,8 +42,7 @@ class ChainClient {
  public:
   // Constructor.
   ChainClient(std::vector<std::string> target_strs,
-              std::vector<int> target_ids,
-              int head_id);
+              std::vector<int> target_ids);
 
   // Run the server.
   void RunServer(std::string ip);

@@ -18,9 +18,6 @@ using chain::PutArg;
 using chain::PutRet;
 using chain::FwdArg;
 using chain::FwdRet;
-using chain::FinalizeKeyArg;
-using chain::FinalizeKeyRet;
-
 using namespace std;
 
 //-----------------------------------------------------------------------------
@@ -49,17 +46,6 @@ Status RPCServer::Forward(ServerContext* context,
 			                    chain::FwdRet* fwd_reply) {
   //cout << "In RPC Server Forward" << endl;
   chain_replica_->HandleForwardRequest(fwd_request, fwd_reply);
-  return Status::OK;
-}
-
-//-----------------------------------------------------------------------------
-
-Status RPCServer::FinalizeKey(grpc::ServerContext* context,
-                              const chain::FinalizeKeyArg* fin_key_arg,
-                              chain::FinalizeKeyRet* fin_key_ret) {
-
-  //cout << "In rpc server finalize key " << endl;
-  chain_replica_->HandleFinalizeKey(fin_key_arg, fin_key_ret);
   return Status::OK;
 }
 

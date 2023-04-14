@@ -31,7 +31,7 @@ class ChainReplica {
   // Constructor.
   ChainReplica(std::vector<int> replica_ids,
                std::vector<std::string> replica_ips,
-               int replica_id, int tail_id);
+               int replica_id);
 
   // Run the server.
   void RunServer();
@@ -54,18 +54,19 @@ class ChainReplica {
   grpc::Status HandleGetRequest(const chain::GetArg* get_arg,
                         chain::GetRet* get_reply);
 
-  // Handle the finalize key request.
-  void HandleFinalizeKey(const chain::FinalizeKeyArg* fin_key_arg,
-                         chain::FinalizeKeyRet* fin_key_ret);
-
-  // Handle the background finalize requests.
-  void HandleFinalizeQueue();
-
  private:
   // Ack client.
   void AcknowledgeClient(std::string key, std::string source_ip);
 
  private:
+  // Structure for put and forward queues.
+  typedef struct {
+    std::string key;
+    std::string value;
+    std::string source_ip;
+    int head_id;
+  } queue_struct_;
+
   // RPC Server Object.
   std::shared_ptr<RPCServer> rpc_server_;
 
@@ -78,34 +79,26 @@ class ChainReplica {
   // Variable to hold this replica's id.
   const int id_;
 
+  // Variable to hold replica count.
+  const int replica_count_;
+
   // Queue for put requests.
-  std::queue<std::pair<std::string, std::pair<std::string, std::string>>>
-    put_queue_;
+  std::queue<queue_struct_*> put_queue_;
 
   // Mutex for protecting the put queue.
   std::mutex put_mutex_;
 
   // Queue for forward requests.
-  std::queue<std::pair<std::string, std::pair<std::string, std::string>>>
-    forward_queue_;
+  std::queue<queue_struct_*> forward_queue_;
 
   // Mutex for protecting forward queue.
   std::mutex forward_mutex_;
 
   // Map to hold the key value data sent by the user
-  std::unordered_map<std::string, std::pair<std::string, bool>> kv_store_;
+  std::unordered_map<std::string, std::string> kv_store_;
 
   // Mutex for protecting the kv store map.
   std::mutex store_mutex_;
-
-  // Queue for finalize requests.
-  std::queue<std::string> finalize_queue_;
-
-  // Mutex for protecting the finalize queue.
-  std::mutex finalize_mutex_;
-
-  // The tail replica
-  const int tail_replica_id_;
 };
 
 #endif
