@@ -98,7 +98,10 @@ void ChainReplica::HandlePutQueue() {
 Status ChainReplica::HandleGetRequest(const chain::GetArg* get_arg,
                                     chain::GetRet* get_reply) {
 
+  cout << "In replica get" << endl;
+
   if (kv_store_.find(get_arg->key()) == kv_store_.end()) {
+    cout << "Key not found in replica " << id_ << endl;
     return grpc::Status(grpc::StatusCode::NOT_FOUND, "Key not found");
   }
 
