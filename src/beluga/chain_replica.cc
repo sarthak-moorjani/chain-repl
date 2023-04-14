@@ -46,7 +46,7 @@ void ChainReplica::RunServer() {
 void ChainReplica::HandleReplicaPut(const chain::PutArg* request,
                                     chain::PutRet* reply) {
   // Execute the operation in the current replica
-  //cout << "In replica put" << endl;
+  cout << "In replica put" << endl;
   // Add data to the kv store.
   {
     std::unique_lock<std::mutex> lock(store_mutex_);
@@ -61,7 +61,7 @@ void ChainReplica::HandleReplicaPut(const chain::PutArg* request,
     queue_data->value = request->val();
     queue_data->source_ip = request->source_ip();
     queue_data->head_id = id_;
-
+    cout << "Added data to put queue" << endl;
     put_queue_.push(queue_data);
     reply->set_val("forwarded");
   }
@@ -82,8 +82,10 @@ void ChainReplica::HandlePutQueue() {
         put_queue_.pop();
       }
     }
-    if (send_req)
+    if (send_req) {
+      cout << "Forwarding the put request" << endl;
       replica_map_[id_ + 1]->Forward(p->key, p->value, p->source_ip, p->head_id);
+    }
   }
 }
 
