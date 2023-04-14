@@ -53,6 +53,9 @@ message FwdArg {
 
   // IP of the next replica in the chain
   optional string source_ip = 3;
+
+  // ID of the head of the chain for current key
+  optional int32 head_id = 4;
 }
 
 message FwdRet {
