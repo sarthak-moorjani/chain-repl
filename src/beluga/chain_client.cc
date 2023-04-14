@@ -58,7 +58,7 @@ void ChainClient::HandleReceiveRequest(const AckArg* ack_arg) {
 
 void ChainClient::Put(string key, string value, string source_ip) {
   int head_replica_id = ((int(key[0])) % replica_count_) + 1;
-  cout << "Sending put request for key " << key << " to head " << head_replica_id << endl;
+  //cout << "Sending put request for key " << key << " to head " << head_replica_id << endl;
   auto start = std::chrono::high_resolution_clock::now();
   put_latency_tracker_[key] = make_pair(start, start);
   replica_map_[head_replica_id]->Put(key, value, source_ip);
@@ -72,7 +72,7 @@ void ChainClient::Get(string key, int replica_id) {
   if (tail_replica_id == 0) {
     tail_replica_id = replica_count_;
   }
-  cout << "Sending get request for key " << key << " to tail " << tail_replica_id << endl; 
+  //cout << "Sending get request for key " << key << " to tail " << tail_replica_id << endl; 
   auto start = std::chrono::high_resolution_clock::now();
   string val = replica_map_[tail_replica_id]->Get(key);
   auto end = std::chrono::high_resolution_clock::now();
@@ -247,10 +247,10 @@ int main(int argc, char* argv[]) {
   thread t1(&ChainClient::RunServer, &chain_client, client_port);
   sleep(5);
 
-  string input_file_path = "/users/" + user + "/chain-repl/inputs/write_workload/" + argv[2];
+  string input_file_path = "/home/" + user + "/chain-repl/inputs/write_workload/" + argv[2];
   cout << input_file_path << endl;
-  //chain_client.InitQueue(input_file_path);
-  chain_client.TestMethod("put");
+  chain_client.InitQueue(input_file_path);
+  //chain_client.TestMethod("put");
 
   chain_client.key_counter_ = 0;
 
@@ -271,8 +271,8 @@ int main(int argc, char* argv[]) {
         input_file_path.replace(str_index, write_string.length(), "read");
     }
 
-  //chain_client.InitQueue(input_file_path);
-  chain_client.TestMethod("get");
+  chain_client.InitQueue(input_file_path);
+  //chain_client.TestMethod("get");
   cout << "Size of keys_queue_ is" << chain_client.keys_queue_.size() << endl;
   auto start_get = std::chrono::high_resolution_clock::now();
   chain_client.FirstCall();

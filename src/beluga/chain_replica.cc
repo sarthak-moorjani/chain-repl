@@ -46,7 +46,7 @@ void ChainReplica::RunServer() {
 void ChainReplica::HandleReplicaPut(const chain::PutArg* request,
                                     chain::PutRet* reply) {
   // Execute the operation in the current replica
-  cout << "In replica put" << endl;
+  //cout << "In replica put" << endl;
   // Add data to the kv store.
   {
     std::unique_lock<std::mutex> lock(store_mutex_);
@@ -61,7 +61,7 @@ void ChainReplica::HandleReplicaPut(const chain::PutArg* request,
     queue_data.value = request->val();
     queue_data.source_ip = request->source_ip();
     queue_data.head_id = id_;
-    cout << "Added data to put queue" << endl;
+    //cout << "Added data to put queue" << endl;
     put_queue_.push(queue_data);
     reply->set_val("forwarded");
   }
@@ -83,7 +83,7 @@ void ChainReplica::HandlePutQueue() {
       }
     }
     if (send_req) {
-      cout << "Forwarding the put request" << endl;
+      //cout << "Forwarding the put request" << endl;
       int next_replica = (id_ + 1) % replica_count_;
       if (next_replica == 0) {
         next_replica = replica_count_;
@@ -98,10 +98,10 @@ void ChainReplica::HandlePutQueue() {
 Status ChainReplica::HandleGetRequest(const chain::GetArg* get_arg,
                                     chain::GetRet* get_reply) {
 
-  cout << "In replica get" << endl;
+  //cout << "In replica get" << endl;
 
   if (kv_store_.find(get_arg->key()) == kv_store_.end()) {
-    cout << "Key not found in replica " << id_ << endl;
+    //cout << "Key not found in replica " << id_ << endl;
     return grpc::Status(grpc::StatusCode::NOT_FOUND, "Key not found");
   }
 
@@ -115,7 +115,7 @@ Status ChainReplica::HandleGetRequest(const chain::GetArg* get_arg,
 void ChainReplica::HandleForwardRequest(const chain::FwdArg* request, 
 		                        chain::FwdRet* reply) {
 	// Add data in the kv store.
-	cout << "In handle forward request" << endl;
+	//cout << "In handle forward request" << endl;
   {
     std::unique_lock<std::mutex> lock(store_mutex_);
     kv_store_[request->key()] = request->val();
@@ -130,7 +130,7 @@ void ChainReplica::HandleForwardRequest(const chain::FwdArg* request,
     queue_data.source_ip = request->source_ip();
     queue_data.head_id = request->head_id();
 
-    cout << "received forward request for key " << request->key() << " from head " << request->head_id() <<endl;
+    //cout << "received forward request for key " << request->key() << " from head " << request->head_id() <<endl;
 
     forward_queue_.push(queue_data);
     // If current replica is the tail then respond to the client
@@ -167,7 +167,7 @@ void ChainReplica::HandleForwardQueue() {
       // If current replica is the tail then respond to the client
       if ((((id_ + 1) % replica_count_) == 0 && (id_ + 1) == p.head_id) ||
         (id_ + 1) % replica_count_ == p.head_id) {
-        cout << "trying to send an ack to the client" << endl;
+        //cout << "trying to send an ack to the client" << endl;
         AcknowledgeClient(p.key, p.source_ip);
       }
       else {

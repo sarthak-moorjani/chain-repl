@@ -75,7 +75,8 @@ for input_file in "${input_files[@]}"; do
 				if [ $COUNTER -lt $clients ]; then
 								CLIENTPORT="${CLIENTSERVER}:${PORT}"
 								echo "$CLIENTPORT"
-								./chain_client $CLIENTPORT $input_file $CONFIGFILE $USER > $COUNTER.out &
+								CLIENT_INPUT=$(echo "$input_file" | cut -d "/" -f 2)
+								./chain_client $CLIENTPORT $CLIENT_INPUT $CONFIGFILE $USER > $COUNTER.out &
 				fi
 				COUNTER=$(expr $COUNTER + 1)
 				PORT=$(expr $PORT + 1)
@@ -83,7 +84,8 @@ done
 
 CLIENTPORT="${CLIENTSERVER}:${PORT}"
 echo "$CLIENTPORT"
-./chain_client $CLIENTPORT ${input_files[-1]} $CONFIGFILE $USER
+CLIENT_INPUT=$(echo "${input_files[-1]}" | cut -d "/" -f 2)
+./chain_client $CLIENTPORT $CLIENT_INPUT $CONFIGFILE $USER
 
 #parallel run_cpp_executable {} ::: "1" "${input_files[@]}"
 
