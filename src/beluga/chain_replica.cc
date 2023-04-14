@@ -56,11 +56,11 @@ void ChainReplica::HandleReplicaPut(const chain::PutArg* request,
   {
     std::unique_lock<std::mutex> lock(put_mutex_);
 
-    queue_struct_* queue_data = new queue_struct_();
-    queue_data->key = request->key();
-    queue_data->value = request->val();
-    queue_data->source_ip = request->source_ip();
-    queue_data->head_id = id_;
+    queue_struct_ queue_data;
+    queue_data.key = request->key();
+    queue_data.value = request->val();
+    queue_data.source_ip = request->source_ip();
+    queue_data.head_id = id_;
     cout << "Added data to put queue" << endl;
     put_queue_.push(queue_data);
     reply->set_val("forwarded");
@@ -73,7 +73,7 @@ void ChainReplica::HandlePutQueue() {
 
   while (true) {
     bool send_req = false;
-    queue_struct_* p;
+    queue_struct_ p;
     if (!put_queue_.empty()) {
       {
         std::unique_lock<std::mutex> lock(put_mutex_);
@@ -84,7 +84,11 @@ void ChainReplica::HandlePutQueue() {
     }
     if (send_req) {
       cout << "Forwarding the put request" << endl;
-      replica_map_[id_ + 1]->Forward(p->key, p->value, p->source_ip, p->head_id);
+      int next_replica = (id_ + 1) % replica_count_;
+      if (next_replica == 0) {
+        next_replica = replica_count_;
+      }
+      replica_map_[next_replica]->Forward(p.key, p.value, p.source_ip, p.head_id);
     }
   }
 }
@@ -108,6 +112,7 @@ Status ChainReplica::HandleGetRequest(const chain::GetArg* get_arg,
 void ChainReplica::HandleForwardRequest(const chain::FwdArg* request, 
 		                        chain::FwdRet* reply) {
 	// Add data in the kv store.
+	cout << "In handle forward request" << endl;
   {
     std::unique_lock<std::mutex> lock(store_mutex_);
     kv_store_[request->key()] = request->val();
@@ -116,11 +121,11 @@ void ChainReplica::HandleForwardRequest(const chain::FwdArg* request,
   {
     std::unique_lock<std::mutex> lock(forward_mutex_);
 
-    queue_struct_* queue_data = new queue_struct_();
-    queue_data->key = request->key();
-    queue_data->value = request->val();
-    queue_data->source_ip = request->source_ip();
-    queue_data->head_id = request->head_id();
+    queue_struct_ queue_data;
+    queue_data.key = request->key();
+    queue_data.value = request->val();
+    queue_data.source_ip = request->source_ip();
+    queue_data.head_id = request->head_id();
 
     cout << "received forward request for key " << request->key() << " from head " << request->head_id() <<endl;
 
@@ -146,7 +151,7 @@ void ChainReplica::HandleForwardQueue() {
   //cout << "In handle forward queue" << endl;
   while (true) {
     bool forward_req = false;
-    queue_struct_*  p;
+    queue_struct_  p;
     if (!forward_queue_.empty()) {
       {
         std::unique_lock<std::mutex> lock(forward_mutex_);
@@ -158,15 +163,19 @@ void ChainReplica::HandleForwardQueue() {
     if (forward_req) {
       // If current replica is the tail then respond to the client
       if ((((id_ + 1) % replica_count_) == 0 && (id_ + 1) == replica_count_) ||
-        (id_ + 1) % replica_count_ == p->head_id) {
+        (id_ + 1) % replica_count_ == p.head_id) {
         cout << "trying to send an ack to the client" << endl;
-        AcknowledgeClient(p->key, p->source_ip);
+        AcknowledgeClient(p.key, p.source_ip);
       }
       else {
         // If current replica is not the tail then forward the request to the
         // next replica
-        replica_map_[id_ + 1]->Forward(p->key, p->value, p->source_ip,
-                                       p->head_id);
+        int next_replica = (id_ + 1) % replica_count_;
+        if (next_replica == 0) {
+          next_replica = replica_count_;
+        }
+        replica_map_[next_replica]->Forward(p.key, p.value, p.source_ip,
+                                       p.head_id);
       }
     }
   }

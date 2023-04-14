@@ -83,13 +83,13 @@ class ChainReplica {
   const int replica_count_;
 
   // Queue for put requests.
-  std::queue<queue_struct_*> put_queue_;
+  std::queue<queue_struct_> put_queue_;
 
   // Mutex for protecting the put queue.
   std::mutex put_mutex_;
 
   // Queue for forward requests.
-  std::queue<queue_struct_*> forward_queue_;
+  std::queue<queue_struct_> forward_queue_;
 
   // Mutex for protecting forward queue.
   std::mutex forward_mutex_;
