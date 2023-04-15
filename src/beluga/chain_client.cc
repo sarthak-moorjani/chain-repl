@@ -247,7 +247,7 @@ int main(int argc, char* argv[]) {
   thread t1(&ChainClient::RunServer, &chain_client, client_port);
   sleep(5);
 
-  string input_file_path = "/home/" + user + "/chain-repl/inputs/write_workload/" + argv[2];
+  string input_file_path = "/users/" + user + "/chain-repl/inputs/write_workload/" + argv[2];
   cout << input_file_path << endl;
   chain_client.InitQueue(input_file_path);
   //chain_client.TestMethod("put");
