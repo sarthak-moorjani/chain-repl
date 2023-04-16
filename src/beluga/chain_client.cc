@@ -32,6 +32,11 @@ ChainClient::ChainClient(vector<string> target_strs, vector<int> target_ids) :
   next_ops_ctr_(0),
   replica_count_(target_strs.size()) {
 
+  for (char c = 'a'; c <= 'z'; c++) {
+    int replica_id = (int(c) % replica_count_) + 1 ;
+    key_replica_map_[c] = replica_id;
+  }
+
   for (int i = 0; i < target_ids.size(); i++) {
     replica_map_[target_ids[i]] = make_shared<RPCClient>(target_strs[i]);
   }
@@ -57,18 +62,18 @@ void ChainClient::HandleReceiveRequest(const AckArg* ack_arg) {
 //-----------------------------------------------------------------------------
 
 void ChainClient::Put(string key, string value, string source_ip) {
-  int head_replica_id = ((int(key[0])) % replica_count_) + 1;
+  //int head_replica_id = ((int(key[0])) % replica_count_) + 1;
   //cout << "Sending put request for key " << key << " to head " << head_replica_id << endl;
   auto start = std::chrono::high_resolution_clock::now();
   put_latency_tracker_[key] = make_pair(start, start);
-  replica_map_[head_replica_id]->Put(key, value, source_ip);
+  replica_map_[key_replica_map_[key[0]]]->Put(key, value, source_ip);
 }
 
 //-----------------------------------------------------------------------------
 
 void ChainClient::Get(string key, int replica_id) {
   //srand(time(NULL));
-  int tail_replica_id = ((int(key[0])) % replica_count_);
+  int tail_replica_id = key_replica_map_[key[0]] - 1;
   if (tail_replica_id == 0) {
     tail_replica_id = replica_count_;
   }

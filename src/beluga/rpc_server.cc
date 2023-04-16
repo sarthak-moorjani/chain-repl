@@ -61,8 +61,8 @@ Status RPCServer::Get(ServerContext* context,
 
 //-----------------------------------------------------------------------------
 
-void RPCServer::RunServer() {
-  std::string server_address("0.0.0.0:50052");
+void RPCServer::RunServer(string port) {
+  std::string server_address("0.0.0.0:" + port);
 
   grpc::EnableDefaultHealthCheckService(true);
   grpc::reflection::InitProtoReflectionServerBuilderPlugin();

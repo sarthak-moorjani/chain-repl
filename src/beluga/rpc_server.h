@@ -25,7 +25,7 @@ class RPCServer final : public chain::ChainImpl::Service {
     RPCServer(ChainReplica *chain_replica);
 
     // Run the server.
-    void RunServer();
+    void RunServer(std::string port = "50052");
 
     // The RPC methods definition will come here.
     grpc::Status Put(grpc::ServerContext* context,

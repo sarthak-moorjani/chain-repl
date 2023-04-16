@@ -36,6 +36,8 @@ class ChainReplica {
   // Run the server.
   void RunServer();
 
+  void RunServerV2();
+
   // Handle put request.
   void HandleReplicaPut(const chain::PutArg* request,
                         chain::PutRet* reply);
@@ -69,6 +71,9 @@ class ChainReplica {
 
   // RPC Server Object.
   std::shared_ptr<RPCServer> rpc_server_;
+
+  // RPC Server for listening to client requests.
+  std::shared_ptr<RPCServer> rpc_serverv2_;
 
   // Mapping from replica ID to RPC Clients.
   std::unordered_map<int, std::shared_ptr<RPCClient> > replica_map_;

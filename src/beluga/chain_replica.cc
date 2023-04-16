@@ -24,6 +24,8 @@ ChainReplica::ChainReplica(vector <int> replica_ids,
   replica_count_(replica_ips.size()){
   rpc_server_ = make_shared<RPCServer>(this);
 
+  rpc_serverv2_ = make_shared<RPCServer>(this);
+
   // Creating client for each replica in the chain
   for (int i = 0; i < replica_ids.size(); i++) {
     if (replica_ids[i] == id_) {
@@ -39,6 +41,12 @@ ChainReplica::ChainReplica(vector <int> replica_ids,
 
 void ChainReplica::RunServer() {
   rpc_server_->RunServer();
+}
+
+//-----------------------------------------------------------------------------
+
+void ChainReplica::RunServerV2() {
+  rpc_serverv2_->RunServer("50051");
 }
 
 //-----------------------------------------------------------------------------
@@ -242,6 +250,7 @@ int main(int argc, char* argv[]) {
   thread t1(&ChainReplica::HandlePutQueue, &chain_replica);
   thread t2(&ChainReplica::HandleForwardQueue, &chain_replica);
   thread t3(&ChainReplica::RunServer, &chain_replica);
+  thread t4(&ChainReplica::RunServerV2, &chain_replica);
 
   t1.join();
   t2.join();

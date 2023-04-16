@@ -33,6 +33,9 @@ class ChainClient {
   // Mapping from replica ID to RPC Clients.
   std::unordered_map<int, std::shared_ptr<RPCClient> > replica_map_;
 
+  // Mapping from key to replica.
+  std::unordered_map<char, int> key_replica_map_;
+
   // Head replica id.
   const int replica_count_;
 
