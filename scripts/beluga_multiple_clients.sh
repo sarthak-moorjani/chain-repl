@@ -5,6 +5,8 @@ if [ $# -lt 2 ]; then
   exit 1
 fi
 
+pkill -f chain_client
+
 PORT=50060
 CLIENTSERVER=
 while IFS= read -r line; do
@@ -23,7 +25,7 @@ USER="$2"
 yum update
 #sudo apt-get install parallel
 
-clients=2
+clients=32
 
 # change working directory from scripts
 pushd ../
