@@ -111,8 +111,18 @@ void ChainReplica::HandlePutQueue() {
         put_queue_.pop();
       }
     }
-    if (send_req)
-      replica_map_[id_ + 1]->Forward(p.first, p.second.first, p.second.second);
+    if (send_req) {
+      bool send_ok =
+        replica_map_[id_ + 1]->Forward(p.first, p.second.first, p.second.second);
+      if (!send_ok) {
+        HandleReorganization(id_ + 1);
+        while (!send_ok) {
+          cout << "resending req" << endl;
+          send_ok =
+            replica_map_[id_ + 1]->Forward(p.first, p.second.first, p.second.second);
+        }
+      }
+    }
   }
 }
 
