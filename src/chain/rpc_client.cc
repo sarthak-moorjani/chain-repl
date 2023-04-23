@@ -82,7 +82,7 @@ string RPCClient::Get(string key) {
 
 //-----------------------------------------------------------------------------
 
-void RPCClient::Forward(string key, string value, string source_ip) {
+bool RPCClient::Forward(string key, string value, string source_ip) {
   FwdArg fwd_arg;
   fwd_arg.set_key(key);
   fwd_arg.set_val(value);
@@ -94,10 +94,12 @@ void RPCClient::Forward(string key, string value, string source_ip) {
   Status status = stub_->Forward(&context, fwd_arg, &fwd_ret);
 
   if (status.ok()) {
+    return true;
    // std::cout << "forward rpc completed" << endl;
   } else {
     std::cout << status.error_code() << ": " << status.error_message()
               << std::endl;
+    return false;
   }
 }
 

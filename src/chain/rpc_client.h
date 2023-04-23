@@ -43,7 +43,7 @@ class RPCClient {
   void Put(string key, string value, string source_ip);
 
   // Handle forward request
-  void Forward(string key, string value, string source_ip);
+  bool Forward(string key, string value, string source_ip);
 
   // Handle the ack request.
   void Ack(string key);
