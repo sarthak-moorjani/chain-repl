@@ -23,6 +23,12 @@ ChainReplica::ChainReplica(vector <int> replica_ids,
   id_(replica_id) {
   rpc_server_ = make_shared<RPCServer>(this);
 
+  num_replicas_ = replica_ids.size();
+  for (int i = 0; i < num_replicas_; i++) {
+    replica_ids_.push_back(replica_ids[i]);
+    replica_ips_.push_back(replica_ips[i]);
+  }
+
   // Creating client for each replica in the chain
   for (int i = 0; i < replica_ids.size(); i++) {
     if (replica_ids[i] == id_) {
@@ -30,8 +36,38 @@ ChainReplica::ChainReplica(vector <int> replica_ids,
     }
     replica_map_[replica_ids[i]] = make_shared<RPCClient>(replica_ips[i]);
   }
+}
 
-  // rpc_server_->RunServer();
+//-----------------------------------------------------------------------------
+
+void ChainReplica::HandleReorganization(int replica_id) {
+  int index = 0;
+  for (int i = 0; i < replica_ids_.size(); i++) {
+    if (replica_ids_[i] == replica_id) {
+      index = i;
+      break;
+    }
+  }
+
+  if (id_ > replica_id) {
+    id_--;
+  }
+
+  num_replicas_--;
+  replica_ids_.erase(replica_ids_.begin() + index);
+  for (int i = 0; i < num_replicas_; i++) {
+    replica_ids_[i] = i + 1;
+  }
+  replica_map_.clear();
+  replica_ips_.erase(replica_ips_.begin() + index);
+
+  // Reinitialize the map.
+  for (int i = 0; i < replica_ids_.size(); i++) {
+    if (replica_ids_[i] == id_) {
+      continue;
+    }
+    replica_map_[replica_ids_[i]] = make_shared<RPCClient>(replica_ips_[i]);
+  }
 }
 
 //-----------------------------------------------------------------------------
