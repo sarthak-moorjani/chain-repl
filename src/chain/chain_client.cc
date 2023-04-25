@@ -67,7 +67,7 @@ void ChainClient::Put(string key, string value, string source_ip) {
 void ChainClient::Get(string key, int replica_id) {
   //srand(time(NULL));
   auto start = std::chrono::high_resolution_clock::now();
-  string val = replica_map_[3]->Get(key);
+  string val = replica_map_[5]->Get(key);
   auto end = std::chrono::high_resolution_clock::now();
   if (val.empty()) {
     key_counter_++;
