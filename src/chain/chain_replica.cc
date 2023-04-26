@@ -184,8 +184,24 @@ void ChainReplica::HandleForwardQueue() {
       // If current replica is not the tail then forward the request to the
       // next replica
       if (replica_map_.find(id_ + 1) != replica_map_.end()) {
-        replica_map_[id_ + 1]->Forward(p.first, p.second.first,
-                                       p.second.second);
+        bool send_ok = replica_map_[id_ + 1]->Forward(p.first, p.second.first,
+                                                      p.second.second);
+        if (!send_ok) {
+          HandleReorganization(id_ + 1);
+          while (!send_ok) {
+            if (id_ == num_replicas_) {
+              cout << "Tail failed, I am the current tail, acking client"
+                   << endl;
+              AcknowledgeClient(p.first, p.second.second);
+              send_ok = true;
+            } else {
+              cout << "resending req" << endl;
+              send_ok =
+                replica_map_[id_ + 1]->Forward(p.first, p.second.first,
+                                               p.second.second);
+            }
+          }
+        }
       } else {
         // If current replica is the tail then respond to the client
         //cout << "trying to send an ack to the client" << endl;
