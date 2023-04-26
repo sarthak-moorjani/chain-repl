@@ -53,6 +53,7 @@ void ChainReplica::HandleReorganization(int replica_id) {
     id_--;
   }
 
+  cout << "current id after re-org is " << id_ << endl;
   num_replicas_--;
   replica_ids_.erase(replica_ids_.begin() + index);
   for (int i = 0; i < num_replicas_; i++) {
@@ -68,6 +69,12 @@ void ChainReplica::HandleReorganization(int replica_id) {
     }
     replica_map_[replica_ids_[i]] = make_shared<RPCClient>(replica_ips_[i]);
   }
+
+  cout << "final mapping after re-org is" << endl;
+  for (int i = 0; i < num_replicas_; i++) {
+    cout << replica_ids_[i] << " " << replica_ips_[i] << endl;
+  }
+  cout << "finished re-org" << endl;
 }
 
 //-----------------------------------------------------------------------------
@@ -115,6 +122,7 @@ void ChainReplica::HandlePutQueue() {
       bool send_ok =
         replica_map_[id_ + 1]->Forward(p.first, p.second.first, p.second.second);
       if (!send_ok) {
+        cout << "doing re-org " << endl;
         HandleReorganization(id_ + 1);
         while (!send_ok) {
           cout << "resending req" << endl;

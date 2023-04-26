@@ -26,6 +26,8 @@ using grpc::Status;
 
 using namespace std;
 
+int put_keys = 0;
+
 //-----------------------------------------------------------------------------
 
 ChainClient::ChainClient(vector<string> target_strs, vector<int> target_ids, int head_id) :
@@ -60,6 +62,10 @@ void ChainClient::Put(string key, string value, string source_ip) {
   auto start = std::chrono::high_resolution_clock::now();
   put_latency_tracker_[key] = make_pair(start, start);
   replica_map_[head_replica_id_]->Put(key, value, source_ip);
+  put_keys++;
+  if (put_keys % 200 == 0) {
+    cout << put_keys << " done " << endl;
+  }
 }
 
 //-----------------------------------------------------------------------------
@@ -242,7 +248,7 @@ int main(int argc, char* argv[]) {
   thread t1(&ChainClient::RunServer, &chain_client, client_port);
   sleep(5);
 
-  string input_file_path = "/users/" + user + "/chain-repl/inputs/write_workload/" + argv[2];
+  string input_file_path = "/home/" + user + "/chain-repl/inputs/write_workload/" + argv[2];
   cout << input_file_path << endl;
   chain_client.InitQueue(input_file_path);
   //chain_client.TestMethod("put");
