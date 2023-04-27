@@ -37,11 +37,18 @@ class ChainClient {
   std::unordered_map<char, int> key_replica_map_;
 
   // Head replica id.
-  const int replica_count_;
+  int replica_count_;
+
+  // Vector containing replica ids.
+  std::vector<int> replica_ids_;
+
+  // Vector containing replica ip addresses.
+  std::vector<std::string> replica_ips_;
 
  public:
 
   int key_counter_;
+
  public:
   // Constructor.
   ChainClient(std::vector<std::string> target_strs,
@@ -70,6 +77,9 @@ class ChainClient {
 
   // Method to test the code changes
   void TestMethod(std::string op);
+
+  // Reorganize keys on failure.
+  void ReorganizeKeys(int id);
 
   // Operations queue.
   std::queue<std::string> operations_queue_;

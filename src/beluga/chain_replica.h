@@ -56,6 +56,9 @@ class ChainReplica {
   grpc::Status HandleGetRequest(const chain::GetArg* get_arg,
                         chain::GetRet* get_reply);
 
+  // Handle reorganization in case of failures.
+  void HandleReorganization(int replica_id);
+
  private:
   // Ack client.
   void AcknowledgeClient(std::string key, std::string source_ip);
@@ -82,10 +85,16 @@ class ChainReplica {
   std::unordered_map<std::string, std::shared_ptr<RPCClient> > client_map_;
 
   // Variable to hold this replica's id.
-  const int id_;
+  int id_;
 
   // Variable to hold replica count.
-  const int replica_count_;
+  int replica_count_;
+
+  // Vector containing replica ids.
+  std::vector<int> replica_ids_;
+
+  // Vector containing replica ip addresses.
+  std::vector<std::string> replica_ips_;
 
   // Queue for put requests.
   std::queue<queue_struct_> put_queue_;

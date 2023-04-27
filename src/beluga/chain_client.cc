@@ -32,6 +32,11 @@ ChainClient::ChainClient(vector<string> target_strs, vector<int> target_ids) :
   next_ops_ctr_(0),
   replica_count_(target_strs.size()) {
 
+  for (int i = 0; i < replica_count_; i++) {
+    replica_ids_.push_back(target_ids[i]);
+    replica_ips_.push_back(target_strs[i]);
+  }
+
   for (char c = 'a'; c <= 'z'; c++) {
     int replica_id = (int(c) % replica_count_) + 1 ;
     key_replica_map_[c] = replica_id;
@@ -61,12 +66,51 @@ void ChainClient::HandleReceiveRequest(const AckArg* ack_arg) {
 
 //-----------------------------------------------------------------------------
 
+void ChainClient::ReorganizeKeys(int replica_id) {
+  int index = 0;
+  for (int i = 0; i < replica_ids_.size(); i++) {
+    if (replica_ids_[i] == replica_id) {
+      index = i;
+      break;
+    }
+  }
+
+  replica_count_--;
+  replica_ids_.erase(replica_ids_.begin() + index);
+  for (int i = 0; i < replica_count_; i++) {
+    replica_ids_[i] = i + 1;
+  }
+  replica_map_.clear();
+  replica_ips_.erase(replica_ips_.begin() + index);
+
+  // Reinitialize the map.
+  for (int i = 0; i < replica_ids_.size(); i++) {
+    replica_map_[replica_ids_[i]] = make_shared<RPCClient>(replica_ips_[i]);
+  }
+
+  for (char c = 'a'; c <= 'z'; c++) {
+    int replica_id = (int(c) % replica_count_) + 1 ;
+    key_replica_map_[c] = replica_id;
+  }
+}
+
+//-----------------------------------------------------------------------------
+
 void ChainClient::Put(string key, string value, string source_ip) {
   //int head_replica_id = ((int(key[0])) % replica_count_) + 1;
   //cout << "Sending put request for key " << key << " to head " << head_replica_id << endl;
   auto start = std::chrono::high_resolution_clock::now();
   put_latency_tracker_[key] = make_pair(start, start);
-  replica_map_[key_replica_map_[key[0]]]->Put(key, value, source_ip);
+  bool put_ok =
+    replica_map_[key_replica_map_[key[0]]]->Put(key, value, source_ip);
+  if (!put_ok) {
+    ReorganizeKeys(key_replica_map_[key[0]]);
+    while (!put_ok) {
+      cout << "resending request " << endl;
+      put_ok =
+        replica_map_[key_replica_map_[key[0]]]->Put(key, value, source_ip);
+    }
+  }
 }
 
 //-----------------------------------------------------------------------------

@@ -40,10 +40,10 @@ class RPCClient {
   RPCClient(string target_str);
 
   // Handle client put request.
-  void Put(string key, string value, string source_ip);
+  bool Put(string key, string value, string source_ip);
 
   // Handle forward request
-  void Forward(string key, string value, string source_ip, int head_id = 0);
+  bool Forward(string key, string value, string source_ip, int head_id = 0);
 
   // Handle the ack request.
   void Ack(string key);

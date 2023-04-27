@@ -26,6 +26,11 @@ ChainReplica::ChainReplica(vector <int> replica_ids,
 
   rpc_serverv2_ = make_shared<RPCServer>(this);
 
+  for (int i = 0; i < replica_count_; i++) {
+    replica_ids_.push_back(replica_ids[i]);
+    replica_ips_.push_back(replica_ips[i]);
+  }
+
   // Creating client for each replica in the chain
   for (int i = 0; i < replica_ids.size(); i++) {
     if (replica_ids[i] == id_) {
@@ -35,6 +40,38 @@ ChainReplica::ChainReplica(vector <int> replica_ids,
   }
 
   // rpc_server_->RunServer();
+}
+
+//-----------------------------------------------------------------------------
+
+void ChainReplica::HandleReorganization(int replica_id) {
+  int index = 0;
+  for (int i = 0; i < replica_ids_.size(); i++) {
+    if (replica_ids_[i] == replica_id) {
+      index = i;
+      break;
+    }
+  }
+
+  if (id_ > replica_id) {
+    id_--;
+  }
+
+  replica_count_--;
+  replica_ids_.erase(replica_ids_.begin() + index);
+  for (int i = 0; i < replica_count_; i++) {
+    replica_ids_[i] = i + 1;
+  }
+  replica_map_.clear();
+  replica_ips_.erase(replica_ips_.begin() + index);
+
+  // Reinitialize the map.
+  for (int i = 0; i < replica_ids_.size(); i++) {
+    if (replica_ids_[i] == id_) {
+      continue;
+    }
+    replica_map_[replica_ids_[i]] = make_shared<RPCClient>(replica_ips_[i]);
+  }
 }
 
 //-----------------------------------------------------------------------------
@@ -96,7 +133,21 @@ void ChainReplica::HandlePutQueue() {
       if (next_replica == 0) {
         next_replica = replica_count_;
       }
-      replica_map_[next_replica]->Forward(p.key, p.value, p.source_ip, p.head_id);
+      bool send_ok =
+        replica_map_[next_replica]->Forward(
+          p.key, p.value, p.source_ip, p.head_id);
+      if (!send_ok) {
+        HandleReorganization(next_replica);
+        next_replica = (id_ + 1) % replica_count_;
+        if (next_replica == 0) {
+          next_replica = replica_count_;
+        }
+        while (!send_ok) {
+          cout << "resending req" << endl;
+          send_ok =
+            replica_map_[next_replica]->Forward(p.key, p.value, p.source_ip, p.head_id);
+        }
+      }
     }
   }
 }
@@ -185,8 +236,35 @@ void ChainReplica::HandleForwardQueue() {
         if (next_replica == 0) {
           next_replica = replica_count_;
         }
-        replica_map_[next_replica]->Forward(p.key, p.value, p.source_ip,
-                                       p.head_id);
+        bool send_ok =
+          replica_map_[next_replica]->Forward(
+            p.key, p.value, p.source_ip, p.head_id);
+        if (!send_ok) {
+          bool is_next_tail = false;
+          int temp = p.head_id - 1;
+          if (temp == 0) {
+            temp = replica_count_;
+          }
+          if (next_replica == temp) {
+            is_next_tail = true;
+          }
+          HandleReorganization(next_replica);
+          next_replica = (id_ + 1) % replica_count_;
+          if (next_replica == 0) {
+            next_replica = replica_count_;
+          }
+          while (!send_ok) {
+            cout << "resending req" << endl;
+            if (is_next_tail) {
+              cout << "tail failed, i am the tail for this key" << endl;
+              AcknowledgeClient(p.key, p.source_ip);
+            }
+            else {
+              send_ok =
+                replica_map_[next_replica]->Forward(p.key, p.value, p.source_ip, p.head_id);
+            }
+          }
+        }
       }
     }
   }
